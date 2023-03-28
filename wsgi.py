@@ -1,8 +1,8 @@
 import requests as requests
 from flask import request, url_for, redirect, render_template
 from services import login
-from app import app
-
+from app import app, login_manager
+from flask_login import login_user
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_controller():
@@ -10,6 +10,10 @@ def login_controller():
         return render_template('auth/login.html')
     else:
         user = login({'email': request.form.get('email'), 'password': request.form.get('password')})
+        if user:
+            login_user(user)
+
+
 
 @app.route('/validate', methods=['GET', 'POST'])
 def numverify():

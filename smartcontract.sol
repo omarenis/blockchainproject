@@ -4,7 +4,9 @@ pragma solidity >=0.8.2 <0.9.0;
 contract StorageJsonFile
 {
     uint256 private numberPersons;
+    uint256 private numberFiles;
 
+    mapping(uint256 => JSonFileRef) files;
     struct JSonFileRef
     {
         string filename;
@@ -13,13 +15,14 @@ contract StorageJsonFile
 
     struct Person
     {
+        uint256 id;
         string firstname;
         string lastname;
         string email;
         string password;
         address _address;
         uint256 numberFiles;
-        mapping(uint256 => JSonFileRef) files;
+        uint256[] fileIds;
     }
 
     struct PersonObject
@@ -34,18 +37,24 @@ contract StorageJsonFile
 
     mapping(uint => Person) private persons;
 
-    constructor() 
+    constructor()
     {
         numberPersons = 0;
     }
 
 
+    function createPerson(uint256 id, string memory firstname, string memory lastname, string memory email, string memory password, address _address) public
+    {
+        persons[id] = Person(id, firstname, lastname, email, password, _address, 0, new uint256[](0));
+        numberPersons ++;
+    }
+
     function getFilesOfPerson(uint personId) public view returns(JSonFileRef[] memory)
     {
         JSonFileRef[] memory jSonFileRefs = new JSonFileRef[](persons[personId].numberFiles);
-        for(uint64 i = 0; i < persons[personId].numberFiles; i++)
+        for(uint256 i=0; i < persons[personId].fileIds.length; i++)
         {
-            jSonFileRefs[i] = persons[personId].files[i];
+            jSonFileRefs[i] = files[persons[personId].fileIds[i]];
         }
         return jSonFileRefs;
     }
@@ -63,18 +72,29 @@ contract StorageJsonFile
 
     function addFile(uint personId, JSonFileRef memory jSonFileRef) public
     {
-        persons[personId].files[persons[personId].numberFiles] = jSonFileRef;
-        persons[personId].numberFiles ++;
+        persons[personId].fileIds.push(numberFiles);
+        files[numberFiles] = jSonFileRef;
+        numberFiles ++;
     }
 
-    function updateFile(uint personId, uint fileId, JSonFileRef memory jSonFileRef) public
+    function updateFile(uint fileId, JSonFileRef memory jSonFileRef) public
     {
-        persons[personId].files[fileId] = jSonFileRef;
+        files[fileId] = jSonFileRef;
     }
 
-    function deleteFile(uint personId, uint fileId) public
+    function deleteFile(uint fileId, uint256 personId) public
     {
-        delete persons[personId].files[fileId];
+        delete files[fileId];
+        for(uint i = 0; i < persons[personId].fileIds.length; i++)
+        {
+            if(persons[personId].fileIds[i] == fileId)
+            {
+                persons[personId].fileIds[i]  = persons[personId].fileIds[persons[personId].numberFiles - 1];
+                delete persons[personId].fileIds[persons[personId].numberFiles - 1];
+                persons[personId].numberFiles --;
+                return ;
+            }
+        }
     }
     function updatePerson(uint personId, PersonObject memory person) public
     {
@@ -84,8 +104,13 @@ contract StorageJsonFile
         persons[personId].password = person.password;
     }
 
-    function deletePerson(uint personId, uint fileId) public
+    function deletePerson(uint personId) public
     {
-        delete persons[personId].files[fileId];
+        for(uint256 i = 0; i < persons[personId].fileIds.length; i++)
+        {
+            delete files[persons[personId].fileIds[i]];
+
+        }
+        delete persons[personId];
     }
 }
