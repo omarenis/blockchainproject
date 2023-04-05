@@ -2,11 +2,10 @@ from flask import Flask
 from flask_mail import Mail, Message
 from flask_login import UserMixin, LoginManager
 from flask_sqlalchemy import SQLAlchemy
-
-
+from os.path import dirname
 class Config(object):
     SECRET_KEY = 'helloworldrgpujefpeogzemogkn'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///project.db'
+    SQLALCHEMY_DATABASE_URI = f'sqlite:///{str(dirname(__file__))}/project.db'
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 465
     MAIL_USE_TLS = False
@@ -27,21 +26,15 @@ class ConfigWithMailPort(Config):
 
 
 app = Flask(__name__)
-app.config.update(
-    SECRET_KEY='helloworldrgpujefpeogzemogkn',
-    SQLALCHEMY_DATABASE_URI='sqlite:///project.db',
-    DEBUG=True,
-    # EMAIL SETTINGS
-    MAIL_SERVER='smtp.gmail.com',
-    MAIL_PORT=465,
-    MAIL_USE_SSL=True,
-    MAIL_USERNAME='omar.triki@enis.th',
-    MAIL_PASSWORD='Omar@+=1996'
-)
+app.config.from_object(Config)
 mail = Mail(app=app)
 login_manager = LoginManager(app=app)
 login_manager.login_view = '/login'
 db = SQLAlchemy(app=app)
-DOMAIN = 'https://dev-r2k0w0yq8vtxnpz2.us.auth0.com'
-CLIEND_ID = 'BFE24WXxoiEzF5qiass44LLOIoShYhfr'
-CLIENT_SECRET = 'cFJ6lbxBz-Xegct1SvR434NMNXyZI9myl-jxxzqAJvRrLxQMoSJUz6JnlLsWa_qJ'
+with app.app_context():
+    db.create_all()
+DOMAIN = 'https://dev-lb7e3m3dx1tif6ur.us.auth0.com'
+CLIEND_ID = 'q79iSXAN4soSeL1aAGg7UhxO1cK9zqAx'
+CLIENT_SECRET = 'mlTYm9o-dRX01S01605C9F8-N_Jp1dzkJDPrV5bgh7DvYWWb7tmXS_CrUU7JhGyZ'
+
+print(app.config)

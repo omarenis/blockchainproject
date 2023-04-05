@@ -53,12 +53,12 @@ def send_code(email):
 
 def signup(data: dict):
     validate(data.get('email'))
-    data['password'] = get_random_string(12)
     person = Person(email=data.get('email'), password=data.get('password'), firstname=data.get('firstname'),
                     lastname=data.get('lastname'))
     db.session.add(person)
     db.session.commit()
-    send_code(person.email)
+    print(person)
+    print(send_code(person.email))
     return "Message sent!"
 
 
@@ -88,12 +88,11 @@ def reset_password(email, action, code=None):
         if response.status_code == 200:
             return json.loads(response.text)
     elif action == 'verify_code' and code is not None:
-        response = post(f'{DOMAIN}/oauth/token', data={
+        post(f'{DOMAIN}/oauth/token', data={
             "grant_type": "http://auth0.com/oauth/grant-type/passwordless/otp",
             'client_id': CLIEND_ID,
             'client_secret': CLIENT_SECRET,
             'otp': code,
         })
-
     else:
         raise Exception('bad request or invalid code')
