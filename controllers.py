@@ -1,14 +1,16 @@
+import json
+
 import requests as requests
 from flask import request, url_for, redirect, render_template, flash
 
 from models import Person
 from services import login, signup
 from app import app, login_manager
-from flask_login import login_user
+from flask_login import login_user, login_required
 
 
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(user_id) -> str:
     return Person.query.get(user_id)
 
 
@@ -17,7 +19,7 @@ def index():
     return 'hello world'
 
 
-def login_controller():
+def login_controller() -> str:
     if request.method == 'POST':
         try:
             user = login({'email': request.form.get('email'), 'password': request.form.get('password')})
@@ -29,7 +31,7 @@ def login_controller():
     return render_template('public/login.html')
 
 
-def signup_controller():
+def signup_controller() -> str:
     if request.method == 'POST':
         try:
             user = signup({'email': request.form.get('email'),
@@ -37,12 +39,18 @@ def signup_controller():
                            'lastname': request.form.get('lastname'),
                            'password': request.form.get('password')
                            })
-            print(user)
             return redirect(url_for('login'))
         except Exception as e:
-            print(e)
             flash(str(e), 'error')
-    return render_template('public/singnup.html')
+    return render_template('public/signnup.html')
+
+
+def upload_file() -> str:
+    if request.method == 'POST':
+        json_file = request.files.get('file')
+        file_to_save_in_blockhain = str(json.loads(json_file.stream.read()))
+        return redirect(url_for('upload'))
+    return render_template('public/upload_json_file.html')
 
 
 def numverify():

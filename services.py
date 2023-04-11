@@ -2,15 +2,10 @@ import json
 import random
 import string
 
-from models import Person
-from requests import get, post
-from email_validator import validate_email, EmailNotValidError
-from app import db, Message, mail, DOMAIN, CLIEND_ID, CLIENT_SECRET
 from flask_login import login_user
-
-HEADERS = {
-    'apikey': 'fUbsfKbIAYCI11NpOsug0mpuZ4FJjALb'
-}
+from requests import post
+from app import db, DOMAIN, CLIEND_ID, CLIENT_SECRET
+from models import Person
 
 
 def get_random_string(length):
@@ -20,15 +15,7 @@ def get_random_string(length):
     return result_str
 
 
-def validate(email):
-    if validate_email(email):
-        response = get(f"https://api.apilayer.com/email_verification/check?email={email}", headers=HEADERS)
-        if response.json()['smtp_check'] is False:
-            raise EmailNotValidError("the email does not support smtp")
-
-
 def login(data: dict):
-    validate(data.get('email'))
     person = db.first_or_404(Person, email=data.get('email'))
     if isinstance(person, Person):
         if person.check_password(data.get('password')):
@@ -52,7 +39,6 @@ def send_code(email):
 
 
 def signup(data: dict):
-    validate(data.get('email'))
     person = Person(email=data.get('email'), password=data.get('password'), firstname=data.get('firstname'),
                     lastname=data.get('lastname'))
     db.session.add(person)
