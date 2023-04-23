@@ -1,3 +1,0 @@
-
-A
-smartcontract.sol,0/3/039f39bd8781081103b024dcb772014a38227294

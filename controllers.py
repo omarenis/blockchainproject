@@ -1,7 +1,9 @@
 import json
+from typing import Union
 
 import requests as requests
 from flask import request, url_for, redirect, render_template, flash
+from werkzeug import Response
 
 from models import Person
 from services import login, signup
@@ -19,7 +21,7 @@ def index():
     return 'hello world'
 
 
-def login_controller() -> str:
+def login_controller() -> Union[Response, str]:
     if request.method == 'POST':
         try:
             user = login({'email': request.form.get('email'), 'password': request.form.get('password')})
@@ -31,24 +33,25 @@ def login_controller() -> str:
     return render_template('public/login.html')
 
 
-def signup_controller() -> str:
+def signup_controller() -> Union[Response, str]:
     if request.method == 'POST':
         try:
-            user = signup({'email': request.form.get('email'),
-                           'firstname': request.form.get('firstname'),
-                           'lastname': request.form.get('lastname'),
-                           'password': request.form.get('password')
-                           })
+            signup({'email': request.form.get('email'),
+                    'firstname': request.form.get('firstname'),
+                    'lastname': request.form.get('lastname'),
+                    'password': request.form.get('password')
+                    })
             return redirect(url_for('login'))
         except Exception as e:
             flash(str(e), 'error')
     return render_template('public/signnup.html')
 
 
-def upload_file() -> str:
+def upload_file() -> Union[Response, str]:
     if request.method == 'POST':
         json_file = request.files.get('file')
         file_to_save_in_blockhain = str(json.loads(json_file.stream.read()))
+        print(file_to_save_in_blockhain)
         return redirect(url_for('upload'))
     return render_template('public/upload_json_file.html')
 

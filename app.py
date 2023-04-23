@@ -32,5 +32,3 @@ with app.app_context():
 DOMAIN = 'https://dev-lb7e3m3dx1tif6ur.us.auth0.com'
 CLIEND_ID = 'q79iSXAN4soSeL1aAGg7UhxO1cK9zqAx'
 CLIENT_SECRET = 'mlTYm9o-dRX01S01605C9F8-N_Jp1dzkJDPrV5bgh7DvYWWb7tmXS_CrUU7JhGyZ'
-
-# print(app.config)

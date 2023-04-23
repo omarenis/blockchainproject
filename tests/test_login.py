@@ -1,4 +1,6 @@
 from flask import url_for
+
+from services import send_code
 from wsgi import app
 
 with app.app_context():
@@ -21,3 +23,8 @@ with app.app_context():
             response = web_client.post('http://127.0.0.1:5000/signup', data=data)
             print(response.text)
             assert response.status_code == 200
+
+    def test_send_code():
+        email = 'omartriki712@gmail.com'
+        response = send_code(email)
+        assert response.status_code == 200
