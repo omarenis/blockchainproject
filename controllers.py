@@ -1,19 +1,31 @@
 import json
+from functools import wraps
 from typing import Union
 
 import requests as requests
 from flask import request, url_for, redirect, render_template, flash
 from werkzeug import Response
-
+from flask.views import MethodView
 from models import Person
 from services import login, signup
-from app import app, login_manager
-from flask_login import login_user, login_required
+from app import app, login_manager, session, db
+from flask_login import login_user, login_required, current_user
 
 
 @login_manager.user_loader
 def load_user(user_id) -> str:
     return Person.query.get(user_id)
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        if not current_user.is_superuser:
+            return login_manager.unauthorized()
+        else:
+            return f(*args, **kwargs)
+
+    return decorated_func
 
 
 @app.route('/')
@@ -54,6 +66,34 @@ def upload_file() -> Union[Response, str]:
         print(file_to_save_in_blockhain)
         return redirect(url_for('upload'))
     return render_template('public/upload_json_file.html')
+
+
+class WorkerCrud(MethodView):
+    decorators = [login_required, admin_required]
+
+    def get(self):
+        return render_template("admin/worker_crud.html",
+                               workers=db.session.execute(db.select(Person).filter_by(is_superuser=False)))
+
+    def post(self):
+        if request.form.get('id') is not None:
+            person = db.get_or_404(Person, id=request.form.get('id'))
+            if person.email != request.form.get('email'):
+                person.email = request.form.get('email')
+            if person.firstname != request.form.get('firstname'):
+                person.firstname = request.form.get('firstname')
+            if person.firstname != request.form.get('firstname'):
+                person.firstname = request.form.get('firstname')
+            if person.lastname != request.form.get('lastname'):
+                person.lastname = request.form.get('lastname')
+            if request.form.get('password') != '':
+                person.set_password(request.data.get('password'))
+        else:
+            person = Person(email=request.form.get('email'), firstname=request.form.get('firstname'),
+                            lastname=request.form.get('lastname'), password=request.form.get('password'))
+        db.session.add(person)
+        db.session.commit()
+        return Response()
 
 
 def numverify():

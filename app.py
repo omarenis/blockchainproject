@@ -3,12 +3,13 @@ from flask_mail import Mail, Message
 from flask_login import UserMixin, LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from os.path import dirname
-
+from flask_session import Session
 
 class Config(object):
     DEBUG = True
     SECRET_KEY = 'helloworldrgpujefpeogzemogkn'
     SQLALCHEMY_DATABASE_URI = f'sqlite:///{str(dirname(__file__))}/project.db'
+    SESSION_TYPE = 'redis'
 
 
 class ConfigWithMailPort(Config):
@@ -27,6 +28,7 @@ mail = Mail(app=app)
 login_manager = LoginManager(app=app)
 login_manager.login_view = '/login'
 db = SQLAlchemy(app=app)
+session = Session(app=app)
 with app.app_context():
     db.create_all()
 DOMAIN = 'https://dev-lb7e3m3dx1tif6ur.us.auth0.com'

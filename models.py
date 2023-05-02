@@ -8,6 +8,7 @@ class Person(db.Model, UserMixin):
     firstname = db.Column(db.String(100), nullable=False)
     lastname = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String())
+    is_superuser = db.Column(db.Boolean, default=False)
 
     def __init__(self, email, firstname, lastname, password, *args, **kwargs):
         self.email = email
