@@ -1,7 +1,7 @@
 import json
 import random
 import string
-
+from datetime import datetime
 from flask_login import login_user
 from requests import post
 from app import db, DOMAIN, CLIEND_ID, CLIENT_SECRET
@@ -16,10 +16,17 @@ def get_random_string(length):
 
 
 def login(data: dict):
-    person = db.first_or_404(Person, email=data.get('email'))
+    person = db.session.execute(db.select(Person).filter_by(email=data.get('email'))).scalar_one_or_none()
+    print("person = ", type(person))
     if isinstance(person, Person):
         if person.check_password(data.get('password')):
-            login_user(person)
+            if person.last_login is None:
+                send_code(person.email)
+                return person
+            else:
+                login_user(person)
+                person.last_login = datetime.utcnow()
+                db.session.commit()
             return person
         raise ValueError('password did not match')
     raise ValueError('person not found with that email')

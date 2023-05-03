@@ -1,13 +1,12 @@
 import json
 from functools import wraps
 from typing import Union
-
 import requests as requests
 from flask import request, url_for, redirect, render_template, flash
 from werkzeug import Response
 from flask.views import MethodView
 from models import Person
-from services import login, signup
+from services import login, signup, verify_code
 from app import app, login_manager, session, db
 from flask_login import login_user, login_required, current_user
 
@@ -28,21 +27,30 @@ def admin_required(f):
     return decorated_func
 
 
-@app.route('/')
-def index():
-    return 'hello world'
-
-
 def login_controller() -> Union[Response, str]:
     if request.method == 'POST':
         try:
             user = login({'email': request.form.get('email'), 'password': request.form.get('password')})
-            if user:
-                login_user(user)
-                return redirect('/')
+            print(user)
+            if user and user.last_login is None:
+                return redirect(url_for('verify_code', email=user.email))
+            else:
+                print(user)
+                return redirect(url_for('index'))
         except Exception as exception:
             flash(str(exception), 'error')
     return render_template('public/login.html')
+
+
+def verify_code_controller():
+    if request.method == 'POST':
+        verified = verify_code(email=request.form.get('email'), code=request.form.get('code'))
+        if verified is True:
+            return redirect(url_for('files'))
+        else:
+            flash('code not verified', 'error')
+
+    return render_template('public/verify_code.html', email=request.args.get('email'))
 
 
 def signup_controller() -> Union[Response, str]:
@@ -63,7 +71,6 @@ def upload_file() -> Union[Response, str]:
     if request.method == 'POST':
         json_file = request.files.get('file')
         file_to_save_in_blockhain = str(json.loads(json_file.stream.read()))
-        print(file_to_save_in_blockhain)
         return redirect(url_for('upload'))
     return render_template('public/upload_json_file.html')
 

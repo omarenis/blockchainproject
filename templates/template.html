@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} {% endblock title %}</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/argon-dashboard.min.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nucleo-icons.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nucleo-svg.css') }}"/>
+</head>
+<body>
+{% block content %}
+
+{% endblock content %}
+{% block scripts %}
+    <script type="text/javascript" src="{{ url_for('static', filename='assets/js/core/popper.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='/assets/js/core/bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='assets/js/plugins/perfect-scrollbar.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='/assets/js/argon-dashboard.min.js') }}"></script>
+      <script>
+        const win = navigator.platform.indexOf('Win') > -1;
+        if (win && document.querySelector('#sidenav-scrollbar')) {
+          const options = {
+            damping: '0.5'
+          };
+          Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+  </script>
+{% endblock %}
+</body>
+</html>
