@@ -1,11 +1,10 @@
-// SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.2 <0.9.0;
 
 contract StorageJsonFile
 {
     uint256 private numberPersons;
     uint256 private numberFiles;
-
+    uint256 [] private personIds;
     mapping(uint256 => JSonFileRef) files;
     struct JSonFileRef
     {
@@ -25,18 +24,17 @@ contract StorageJsonFile
         uint256[] fileIds;
     }
 
-    struct PersonObject
-    {
+    mapping(uint => Person) private persons;
+
+
+    struct PersonObject {
+            uint256 id;
         string firstname;
         string lastname;
         string email;
         address _address;
-        uint numberFiles;
-        string password;
+        uint256 numberFiles;
     }
-
-    mapping(uint => Person) private persons;
-
     constructor()
     {
         numberPersons = 0;
@@ -65,7 +63,7 @@ contract StorageJsonFile
         PersonObject[] memory person_objects = new PersonObject[](numberPersons);
         for(uint64 i = 0; i < numberPersons; i++)
         {
-            person_objects[i] = PersonObject(persons[i].firstname, persons[i].lastname, persons[i].email, persons[i]._address, persons[i].numberFiles, "");
+            person_objects[i] = PersonObject(persons[personIds[i]].id, persons[personIds[i]].firstname, persons[personIds[i]].lastname, persons[personIds[i]].email, persons[personIds[i]]._address, persons[personIds[i]].numberFiles);
         }
         return person_objects;
     }
@@ -96,12 +94,13 @@ contract StorageJsonFile
             }
         }
     }
-    function updatePerson(uint personId, PersonObject memory person) public
+
+    function updatePerson(uint personId, string memory firstname, string memory lastname, string memory email, string memory password) public
     {
-        persons[personId].firstname = person.firstname;
-        persons[personId].lastname = person.lastname;
-        persons[personId].email = person.email;
-        persons[personId].password = person.password;
+        persons[personId].firstname = firstname;
+        persons[personId].lastname = lastname;
+        persons[personId].email = email;
+        persons[personId].password = password;
     }
 
     function deletePerson(uint personId) public
@@ -112,5 +111,14 @@ contract StorageJsonFile
 
         }
         delete persons[personId];
+        for(uint256 i = 0; i < personIds.length; i++)
+        {
+            if(personIds[i] == personId)
+            {
+                personIds[i] = personIds[personIds.length - 1];
+                personIds.pop();
+                return ;
+            }
+        }
     }
 }
