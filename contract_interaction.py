@@ -65,3 +65,24 @@ def deploy_contract():
             return tx_receipt.contractAddress
     else:
         return Exception("not authenticated")
+
+class FileStorageService():
+    
+    def __init__(contract_address):
+        self.contact_address = contract_address
+    
+    def save():
+        pass
+    
+    def delete():
+        pass
+    
+    def retreive(_id: int):
+        pass
+    
+    def put(_id: int, data: dict):
+        pass
+    
+    def create(data: dict):
+        pass
+ 
