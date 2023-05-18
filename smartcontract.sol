@@ -1,12 +1,11 @@
-// SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.2 <0.9.0;
 
 contract StorageJsonFile
 {
+    uint256[] private fileIds;
     uint256 private numberPersons;
     uint256 private numberFiles;
-
-    mapping(uint256 => JSonFileRef) files;
+    uint256 [] private personIds;
     struct JSonFileRef
     {
         string filename;
@@ -19,61 +18,23 @@ contract StorageJsonFile
         string firstname;
         string lastname;
         string email;
-        string password;
         address _address;
-        uint256 numberFiles;
-        uint256[] fileIds;
-    }
-
-    struct PersonObject
-    {
-        string firstname;
-        string lastname;
-        string email;
-        address _address;
-        uint numberFiles;
-        string password;
     }
 
     mapping(uint => Person) private persons;
-
+    mapping(uint256 => JSonFileRef) private files;
     constructor()
     {
         numberPersons = 0;
+        numberFiles = 0;
     }
 
 
-    function createPerson(uint256 id, string memory firstname, string memory lastname, string memory email, string memory password, address _address) public
-    {
-        persons[id] = Person(id, firstname, lastname, email, password, _address, 0, new uint256[](0));
-        numberPersons ++;
-    }
 
-    function getFilesOfPerson(uint personId) public view returns(JSonFileRef[] memory)
+    function addFile(JSonFileRef memory jSonFileRef) public
     {
-        JSonFileRef[] memory jSonFileRefs = new JSonFileRef[](persons[personId].numberFiles);
-        for(uint256 i=0; i < persons[personId].fileIds.length; i++)
-        {
-            jSonFileRefs[i] = files[persons[personId].fileIds[i]];
-        }
-        return jSonFileRefs;
-    }
-
-
-    function getPersons() public view returns(PersonObject[] memory)
-    {
-        PersonObject[] memory person_objects = new PersonObject[](numberPersons);
-        for(uint64 i = 0; i < numberPersons; i++)
-        {
-            person_objects[i] = PersonObject(persons[i].firstname, persons[i].lastname, persons[i].email, persons[i]._address, persons[i].numberFiles, "");
-        }
-        return person_objects;
-    }
-
-    function addFile(uint personId, JSonFileRef memory jSonFileRef) public
-    {
-        persons[personId].fileIds.push(numberFiles);
         files[numberFiles] = jSonFileRef;
+        fileIds.push(numberFiles);
         numberFiles ++;
     }
 
@@ -82,35 +43,77 @@ contract StorageJsonFile
         files[fileId] = jSonFileRef;
     }
 
-    function deleteFile(uint fileId, uint256 personId) public
+    function deleteFile(uint fileId) public
     {
         delete files[fileId];
-        for(uint i = 0; i < persons[personId].fileIds.length; i++)
+        numberFiles --;
+        for(uint i=0; i<numberFiles; i++)
         {
-            if(persons[personId].fileIds[i] == fileId)
+            if(fileIds[i] == fileId)
             {
-                persons[personId].fileIds[i]  = persons[personId].fileIds[persons[personId].numberFiles - 1];
-                delete persons[personId].fileIds[persons[personId].numberFiles - 1];
-                persons[personId].numberFiles --;
-                return ;
+                fileIds[i] = fileIds[numberFiles - 1];
+                fileIds.pop();
+                return;
             }
         }
     }
-    function updatePerson(uint personId, PersonObject memory person) public
+
+    function getFiles()  public view returns(JSonFileRef[] memory){
+        JSonFileRef[] memory fileObjects = new JSonFileRef[](numberFiles);
+        for(uint i=0; i< numberFiles; i++)
+        {
+            fileObjects[i] = files[fileIds[i]];
+        }
+        return fileObjects;
+    }
+
+
+    function createPerson(uint256 id, string memory firstname, string memory lastname, string memory email, address _address) public
     {
-        persons[personId].firstname = person.firstname;
-        persons[personId].lastname = person.lastname;
-        persons[personId].email = person.email;
-        persons[personId].password = person.password;
+        persons[id] = Person(id, firstname, lastname, email, _address);
+        personIds.push(id);
+        numberPersons ++;
+    }
+
+    function getPersons() public view returns(Person[] memory)
+    {
+        Person[] memory person_objects = new Person[](numberPersons);
+        for(uint64 i = 0; i < numberPersons; i++)
+        {
+            person_objects[i] = persons[personIds[i]];
+        }
+        return person_objects;
+    }
+
+    function updatePerson(uint256 personId, string memory firstname, string memory lastname, string memory email) public
+    {
+        persons[personId].firstname = firstname;
+        persons[personId].lastname = lastname;
+        persons[personId].email = email;
     }
 
     function deletePerson(uint personId) public
     {
-        for(uint256 i = 0; i < persons[personId].fileIds.length; i++)
-        {
-            delete files[persons[personId].fileIds[i]];
-
-        }
         delete persons[personId];
+        for(uint256 i = 0; i < personIds.length; i++)
+        {
+            if(personIds[i] == personId)
+            {
+                personIds[i] = personIds[personIds.length - 1];
+                personIds.pop();
+                return ;
+            }
+        }
+    }
+
+    function getPersonByEmail(string memory email) public view returns(Person memory)  {
+        for(uint i=0; i < personIds.length; i++)
+        {
+            if(keccak256(bytes(email)) == keccak256(bytes(persons[personIds[i]].email)))
+            {
+                return persons[personIds[i]];
+            }
+        }
+        revert('Not found');
     }
 }

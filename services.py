@@ -6,7 +6,7 @@ from flask_login import login_user
 from requests import post
 from app import db, DOMAIN, CLIEND_ID, CLIENT_SECRET
 from models import Person
-
+from contract_interaction import W3
 
 def get_random_string(length):
     # choose from all lowercase letter
@@ -16,6 +16,7 @@ def get_random_string(length):
 
 
 def login(data: dict):
+
     person = db.session.execute(db.select(Person).filter_by(email=data.get('email'))).scalar_one_or_none()
     print("person = ", type(person))
     if isinstance(person, Person):
@@ -50,8 +51,6 @@ def signup(data: dict):
                     lastname=data.get('lastname'))
     db.session.add(person)
     db.session.commit()
-    print(person)
-    print(send_code(person.email))
     return "Message sent!"
 
 
@@ -89,3 +88,27 @@ def reset_password(email, action, code=None):
         })
     else:
         raise Exception('bad request or invalid code')
+
+
+class WorkerService(object):
+
+    def __init__(self, contract_address, abi):
+        self.contract = W3.eth.contract(address=contract_address, abi=abi)
+
+    def create(self, data: dict):
+        person  = self.contract.functions.getPersonByEmail(data['email'])
+        if person:
+            raise ValueError('email can not be used for this worker')
+
+        account = W3.eth.account.create(data['email'])
+        address = account.address
+        private_key = address.privateKey
+
+        person = Person()
+        acount = W3.eth.account.create(data.get('email'))
+
+
+class FileStorageService(object):
+
+    def __init__(self, contract_address):
+        self.contract_address = contract_address
