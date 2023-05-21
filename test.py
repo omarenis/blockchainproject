@@ -1,12 +1,22 @@
-from eth_account import Account
-import urllib
-from uri.uri import URI
-from contract_interaction import compile_source_file, W3
+import time
 from app import app, db
+from contract_interaction import W3
+from models import Contract, Person
+from contract_interaction import ABI, BYTECODE
+from web3.middleware import simple_cache_middleware
+W3.middleware_onion.add(simple_cache_middleware)
+with app.app_context():
+    db.drop_all()
+    db.create_all()
+    Contract.deploy(abi=ABI, bytecode=BYTECODE)
+    # print(W3.eth.syncing)
+    # contract = db.session.execute(db.Select(Contract)).first()[0].load_contract()
+    # print(contract.functions.getPersons().call())
 
-list_wallets = W3.geth.personal.list_wallets()
-for wallet in list_wallets:
-    print((Account.from_key(W3.eth.account.decrypt(open(URI(wallet.accounts[0].url).path).read(), '11608168'))).key)
-
-
-file = URI("keystore:///home/ubuntu/ethereum_database/data/keystore/UTC--2023-05-18T19-27-03.109794285Z--bf7408b915e9b03ce82316d5c6d26575871928d1").path
+#     contract = db.session.execute(db.Select(Contract)).first()[0].load_contract()
+#     print(contract)
+#
+#
+# print(contract.functions.getPersons().transact({
+#
+# }))

@@ -76,10 +76,9 @@ def upload_file() -> Union[Response, str]:
 
 
 class WorkerCrud(MethodView):
-    decorators = [login_required, admin_required]
 
     def get(self):
-        return render_template("admin/worker_crud.html",
+        return render_template("dashboard/worker_crud.html",
                                workers=db.session.execute(db.select(Person).filter_by(is_superuser=False)))
 
     def post(self):

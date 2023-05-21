@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from os.path import dirname
 from flask_session import Session
 
+
 class Config(object):
     DEBUG = True
     SECRET_KEY = 'helloworldrgpujefpeogzemogkn'
@@ -32,5 +33,5 @@ session = Session(app=app)
 with app.app_context():
     db.create_all()
 DOMAIN = 'https://dev-lb7e3m3dx1tif6ur.us.auth0.com'
-CLIEND_ID = 'q79iSXAN4soSeL1aAGg7UhxO1cK9zqAx'
+CLIENT_ID = 'q79iSXAN4soSeL1aAGg7UhxO1cK9zqAx'
 CLIENT_SECRET = 'mlTYm9o-dRX01S01605C9F8-N_Jp1dzkJDPrV5bgh7DvYWWb7tmXS_CrUU7JhGyZ'

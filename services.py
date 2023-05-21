@@ -4,9 +4,30 @@ import string
 from datetime import datetime
 from flask_login import login_user
 from requests import post
-from app import db, DOMAIN, CLIEND_ID, CLIENT_SECRET
+from app import db, DOMAIN, CLIENT_ID, CLIENT_SECRET
 from models import Person
 from contract_interaction import W3
+import os
+from dotenv import load_dotenv
+from cryptography.fernet import Fernet
+import hashlib
+import base64
+from eth_account import Account
+import urllib
+from uri.uri import URI
+
+load_dotenv()
+FERNET = Fernet(
+    base64.b64encode(hashlib.pbkdf2_hmac('sha256', os.environ.get('FERNET_KEY').encode('ascii'),
+                                         'hEq52fRbu1WGrU2TIsZ3vtFf7xJp2SMOEC4'.encode('ascii'),
+                                         1000))
+)
+
+
+def encode_private_key(private_key_path, passphrase):
+    return FERNET.encrypt((Account.from_key(W3.eth.account.decrypt(open(URI(private_key_path).path).read(), passphrase))
+                           ).key.hex().encode('utf-8')).decode('utf-8')
+
 
 def get_random_string(length):
     # choose from all lowercase letter
@@ -16,7 +37,6 @@ def get_random_string(length):
 
 
 def login(data: dict):
-
     person = db.session.execute(db.select(Person).filter_by(email=data.get('email'))).scalar_one_or_none()
     print("person = ", type(person))
     if isinstance(person, Person):
@@ -35,7 +55,7 @@ def login(data: dict):
 
 def send_code(email):
     response = post(f"{DOMAIN}/passwordless/start", data={
-        'client_id': CLIEND_ID,
+        'client_id': CLIENT_ID,
         'client_secret': CLIENT_SECRET,
         'connection': 'email',
         'send': 'code',
@@ -57,7 +77,7 @@ def signup(data: dict):
 def verify_code(email, code):
     response = json.loads(post(f'{DOMAIN}/oauth/token', data={
         "grant_type": "http://auth0.com/oauth/grant-type/passwordless/otp",
-        'client_id': CLIEND_ID,
+        'client_id': CLIENT_ID,
         'client_secret': CLIENT_SECRET,
         'otp': code,
         'realm': 'email',
@@ -71,7 +91,7 @@ def verify_code(email, code):
 def reset_password(email, action, code=None):
     if action == 'send_code':
         response = post(f"{DOMAIN}/passwordless/start", data={
-            'client_id': CLIEND_ID,
+            'client_id': CLIENT_ID,
             'client_secret': CLIENT_SECRET,
             'connection': 'email',
             'send': 'code',
@@ -82,7 +102,7 @@ def reset_password(email, action, code=None):
     elif action == 'verify_code' and code is not None:
         post(f'{DOMAIN}/oauth/token', data={
             "grant_type": "http://auth0.com/oauth/grant-type/passwordless/otp",
-            'client_id': CLIEND_ID,
+            'client_id': CLIENT_ID,
             'client_secret': CLIENT_SECRET,
             'otp': code,
         })
@@ -96,16 +116,14 @@ class WorkerService(object):
         self.contract = W3.eth.contract(address=contract_address, abi=abi)
 
     def create(self, data: dict):
-        person  = self.contract.functions.getPersonByEmail(data['email'])
+        person = self.contract.functions.getPersonByEmail(data['email']).call()
         if person:
             raise ValueError('email can not be used for this worker')
 
-        account = W3.eth.account.create(data['email'])
-        address = account.address
-        private_key = address.privateKey
-
-        person = Person()
-        acount = W3.eth.account.create(data.get('email'))
+        address = W3.geth.personal.new_account(data.get('email'))
+        wallet = W3.geth.personal.list_wallets()[-1]
+        private_key = encode_private_key(wallet.accounts[0].url, data['email'])
+        is_superuser = False
 
 
 class FileStorageService(object):

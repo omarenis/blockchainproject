@@ -10,15 +10,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nucleo-icons.css') }}"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nucleo-svg.css') }}"/>
 </head>
-<body>
+{% set is_authenticated = true %}
+<body class="{{ '' if is_authenticated == true else ''  }} ">
 {% block content %}
 
 {% endblock content %}
 {% block scripts %}
-    <script type="text/javascript" src="{{ url_for('static', filename='assets/js/core/popper.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='/assets/js/core/bootstrap.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='assets/js/plugins/perfect-scrollbar.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='/assets/js/argon-dashboard.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/core/popper.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/core/bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/plugins/perfect-scrollbar.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/argon-dashboard.min.js') }}"></script>
       <script>
         const win = navigator.platform.indexOf('Win') > -1;
         if (win && document.querySelector('#sidenav-scrollbar')) {

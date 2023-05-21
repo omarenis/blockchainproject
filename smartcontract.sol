@@ -19,6 +19,9 @@ contract StorageJsonFile
         string lastname;
         string email;
         address _address;
+        string telephone;
+        string location;
+        string image;
     }
 
     mapping(uint => Person) private persons;
@@ -68,9 +71,9 @@ contract StorageJsonFile
     }
 
 
-    function createPerson(uint256 id, string memory firstname, string memory lastname, string memory email, address _address) public
+    function createPerson(uint256 id, string memory firstname, string memory lastname, string memory email, address _address, string memory telephone, string memory location, string memory image) public
     {
-        persons[id] = Person(id, firstname, lastname, email, _address);
+        persons[id] = Person(id, firstname, lastname, email, _address, telephone, location, image);
         personIds.push(id);
         numberPersons ++;
     }
@@ -85,11 +88,15 @@ contract StorageJsonFile
         return person_objects;
     }
 
-    function updatePerson(uint256 personId, string memory firstname, string memory lastname, string memory email) public
+    function updatePerson(uint256 personId, string memory firstname, string memory lastname, string memory email,
+        string memory telephone, string memory location, string memory image) public
     {
         persons[personId].firstname = firstname;
         persons[personId].lastname = lastname;
         persons[personId].email = email;
+        persons[personId].telephone = telephone;
+        persons[personId].location = location;
+        persons[personId].image = image;
     }
 
     function deletePerson(uint personId) public

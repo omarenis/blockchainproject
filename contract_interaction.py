@@ -10,7 +10,7 @@ from solcx import compile_source
 
 CONTRACT_CSV_FILEPATH = dirname(__file__) + '/contracts.csv'
 FILEPATH = dirname(__file__) + '/accounts.csv'
-W3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
+W3 = Web3(Web3.IPCProvider('/home/ubuntu/ethereum_database/data/geth.ipc'))
 private_key = None
 # try:
 #     COINTBASE = W3.eth.coinbase
@@ -27,19 +27,16 @@ BYTECODE = open(f'{dir_path}/contract-bin.txt', 'r').read().replace("\n", "")
 
 
 def compile_source_file():
-
     with open(f"{dir_path}/smartcontract.sol", "r") as f:
         return compile_source(f.read(), output_values=['abi', 'bin']).popitem()[1]
 
 
 def submit_transaction_hash(transaction_hash):
-    W3.geth.miner.start(1)
     while True:
         try:
             tx_receipt = W3.eth.wait_for_transaction_receipt(transaction_hash)
             sleep(10)
-            if tx_receipt is not None:
-                W3.geth.miner.stop()
+            if tx_receipt is not None and tx_receipt.contractAddress is not None:
                 return tx_receipt
         except Exception as exception:
             print(exception, end="")
