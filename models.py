@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-
 from werkzeug.security import check_password_hash, generate_password_hash
 from app import db, UserMixin
 from contract_interaction import submit_transaction_hash, W3
@@ -17,18 +16,16 @@ class PersonModel(db.Model, UserMixin):
     last_login = db.Column(db.DateTime(), default=None, nullable=True)
     operations = db.Relationship('Operation', backref='person', lazy=True)
 
-    def __init__(self, email, firstname, lastname, password, private_key, *args, **kwargs):
-        self.email = email
-        self.firstname = firstname
-        self.lastname = lastname
-        self.set_password(password)
+    def __init__(self, address, private_key, password=None, is_superuser=False, *args, **kwargs):
+        self.address = address
         self.private_key = private_key
-
-    def set_password(self, password):
-        self.password = generate_password_hash(password)
+        self.is_superuser = is_superuser
 
     def check_password(self, password) -> bool:
         return check_password_hash(self.password, password)
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
 
 
 class ContractModel(db.Model):
@@ -73,17 +70,35 @@ class ContractModel(db.Model):
 
 
 class OperationModel(db.Model):
-
     __tablename__ = 'operations'
     id = db.Column(db.Integer, primary_key=True)
     person = db.Colmn(db.Integer, db.Foreignkey('person.id'), lazy=True)
     transaction_hash = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime(), nullable=False, default=)
 
 
 class Person(object):
 
-    def __init__(self, email, firstname, lastname, private_key):
+    def __init__(self, email, firstname, lastname, location, telephone, image, private_key, password=None):
+        self.password = password
         self.email = email
         self.firstname = firstname
         self.lastname = lastname
         self.private_key = private_key
+        self.location = location
+        self.telephone = telephone
+        self.image = image
+
+
+class File(object):
+
+    def __init__(self, filename, file_content):
+        self.filename = filename
+        self.file_content = file_content
+
+
+class Operation(object):
+    def __init__(self, person: Person, file: File, transaction_hash):
+        self.person = person
+        self.file = file
+        self.transaction_hash = transaction_hash
