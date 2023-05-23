@@ -15,7 +15,5 @@ J
 contract-bin.txt,3/8/38b6ad345af20858a57c0965995c9f06c41e650f
 @
 contract-abi.txt,5/5/55bc7c56009dcf8d6ccb789677d95461d3829779
-4
-.env,3/c/3c84dcdc6bbe3d7817c49dcdc327b926fea1808a
 f
 6env/lib/python3.8/site-packages/eth_account/account.py,7/9/79f801d6401bb913a5e3b7fbd9a4157598818c1f

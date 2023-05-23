@@ -102,6 +102,10 @@ class WorkerCrud(MethodView):
         return Response()
 
 
+def worker_create_form():
+    return render_template('dashboard/new_worker.html')
+
+
 def numverify():
     if request.method == 'GET':
         return '''<h1>Please fill out the parameters</h1>

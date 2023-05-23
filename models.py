@@ -6,7 +6,7 @@ from app import db, UserMixin
 from contract_interaction import submit_transaction_hash, W3
 
 
-class Person(db.Model, UserMixin):
+class PersonModel(db.Model, UserMixin):
     __tablename__ = 'persons'
 
     address = db.Column(db.String, unique=True, nullable=False)
@@ -15,6 +15,7 @@ class Person(db.Model, UserMixin):
     password = db.Column(db.String())
     is_superuser = db.Column(db.Boolean, default=False)
     last_login = db.Column(db.DateTime(), default=None, nullable=True)
+    operations = db.Relationship('Operation', backref='person', lazy=True)
 
     def __init__(self, email, firstname, lastname, password, private_key, *args, **kwargs):
         self.email = email
@@ -30,7 +31,7 @@ class Person(db.Model, UserMixin):
         return check_password_hash(self.password, password)
 
 
-class Contract(db.Model):
+class ContractModel(db.Model):
     __tablename__ = 'contracts'
     W3 = W3
     contract_address = db.Column(db.String(255), primary_key=True)
@@ -45,7 +46,6 @@ class Contract(db.Model):
 
     def load_contract(self):
         return W3.eth.contract(address=self.contract_address, abi=json.loads(self.abi), bytecode=self.bytecode)
-
 
     @classmethod
     def deploy(cls, abi, bytecode):
@@ -70,3 +70,20 @@ class Contract(db.Model):
                 return contract
         else:
             return Exception("not authenticated")
+
+
+class OperationModel(db.Model):
+
+    __tablename__ = 'operations'
+    id = db.Column(db.Integer, primary_key=True)
+    person = db.Colmn(db.Integer, db.Foreignkey('person.id'), lazy=True)
+    transaction_hash = db.Column(db.Text, nullable=False)
+
+
+class Person(object):
+
+    def __init__(self, email, firstname, lastname, private_key):
+        self.email = email
+        self.firstname = firstname
+        self.lastname = lastname
+        self.private_key = private_key

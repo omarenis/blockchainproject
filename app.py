@@ -10,7 +10,6 @@ class Config(object):
     DEBUG = True
     SECRET_KEY = 'helloworldrgpujefpeogzemogkn'
     SQLALCHEMY_DATABASE_URI = f'sqlite:///{str(dirname(__file__))}/project.db'
-    SESSION_TYPE = 'redis'
 
 
 class ConfigWithMailPort(Config):
