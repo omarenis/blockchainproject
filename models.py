@@ -75,7 +75,7 @@ class OperationModel(db.Model):
     id = Column(Integer, primary_key=True)
     person = Column(Integer, db.ForeignKey('persons.id'))
     transaction_hash = Column(Text, nullable=False)
-    created_at = Column(DateTime(), nullable=False)
+    created_at = Column(DateTime())
 
 
 class Person(object):
