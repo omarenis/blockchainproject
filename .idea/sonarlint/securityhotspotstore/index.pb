@@ -13,22 +13,10 @@ J
 templates/public/login.css,a/c/ac7c8a7b8ce926ab511f77130f4ad6d355c89bf2
 @
 contract-abi.txt,5/5/55bc7c56009dcf8d6ccb789677d95461d3829779
-f
-6env/lib/python3.8/site-packages/eth_account/account.py,7/9/79f801d6401bb913a5e3b7fbd9a4157598818c1f
-;
-services.py,9/1/91da1bc0bfa766513e9a974699a621b2dfe2f74b
-4
-.env,3/c/3c84dcdc6bbe3d7817c49dcdc327b926fea1808a
-6
-app.py,1/3/13cce7fd076299c81b4986166f3d822791c9490e
-G
-contract_interaction.py,1/e/1e6b29f9452ca79464686f702715b7e8b99b0ca8
 T
 $templates/dashboard/upload_file.html,a/b/ab8487281d1cb8a838e256268c05d10fa8857730
 7
 wsgi.py,4/9/491d41343a6a914bfa8b19169cde1c8086bdb8b7
->
-controllers.py,6/8/684fd130086d2018d1aa96d27783ea38ace59cff
 S
 #templates/dashboard/new_worker.html,a/b/abeb08131f5b57096822bd1bd4be4970304dd1ac
 W
@@ -41,7 +29,9 @@ $templates/dashboard/worker_crud.html,c/a/ca87e67c8fb2e485a5fb1d72ade9e73b51015
 contract-bin.txt,3/8/38b6ad345af20858a57c0965995c9f06c41e650f
 A
 smartcontract.sol,0/3/039f39bd8781081103b024dcb772014a38227294
-9
-	models.py,8/5/85f64e80ba345158acc186d4505f039d4f21420f
 ?
 repositories.py,3/0/3069fd62934eaa1525a37e2048986cab0b510e8f
+;
+services.py,9/1/91da1bc0bfa766513e9a974699a621b2dfe2f74b
+4
+file,9/7/971c419dd609331343dee105fffd0f4608dc0bf2

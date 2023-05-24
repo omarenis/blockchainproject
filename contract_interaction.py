@@ -10,7 +10,7 @@ from solcx import compile_source
 
 CONTRACT_CSV_FILEPATH = dirname(__file__) + '/contracts.csv'
 FILEPATH = dirname(__file__) + '/accounts.csv'
-W3 = Web3(Web3.IPCProvider('/home/ubuntu/ethereum_database/data/geth.ipc'))
+W3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
 private_key = None
 # try:
 #     COINTBASE = W3.eth.coinbase
@@ -24,12 +24,15 @@ private_key = None
 dir_path = os.path.dirname(os.path.realpath(__file__))
 ABI = json.loads(open(f'{dir_path}/contract-abi.txt').read().replace("\n", ""))
 BYTECODE = open(f'{dir_path}/contract-bin.txt', 'r').read().replace("\n", "")
+ACCOUNT = W3.eth.coinbase
 
 
 def compile_source_file():
     with open(f"{dir_path}/smartcontract.sol", "r") as f:
+        print(compile_source(f.read(), output_values=['abi', 'bin']).popitem()[1])
         return compile_source(f.read(), output_values=['abi', 'bin']).popitem()[1]
 
+compile_source_file()
 
 def submit_transaction_hash(transaction_hash):
     while True:
@@ -40,3 +43,25 @@ def submit_transaction_hash(transaction_hash):
                 return tx_receipt
         except Exception as exception:
             print(exception, end="")
+
+
+def create_account(passphrase):
+    account = W3.geth.personal.new_account(passphrase)
+    if W3.eth.get_balance(account) <= 10000000000:
+        W3.geth.miner.set_etherbase(account)
+        W3.geth.miner.start()
+        while W3.eth.get_balance(account) <= 10000000000:
+            sleep(5)
+            if W3.eth.get_balance(account) >= 10000000000:
+                W3.geth.miner.stop()
+                W3.geth.miner.set_etherbase(ACCOUNT)
+                return {
+                    'account': account,
+                    'wallet': W3.geth.personal.list_wallets()[-1]
+                }
+
+
+def execute_smart_contract_function(function, account, private_key):
+
+    estimate_gas = function.estimate_gas()
+

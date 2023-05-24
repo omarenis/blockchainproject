@@ -3,17 +3,18 @@ from datetime import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
 from app import db, UserMixin
 from contract_interaction import submit_transaction_hash, W3
-
+from sqlalchemy import ForeignKey, Column, String, Text, Integer, Boolean, DateTime
+from sqlalchemy import String
 
 class PersonModel(db.Model, UserMixin):
     __tablename__ = 'persons'
 
-    address = db.Column(db.String, unique=True, nullable=False)
-    private_key = db.Column(db.Text, nullable=False)
-    id = db.Column(db.Integer, primary_key=True)
-    password = db.Column(db.String())
-    is_superuser = db.Column(db.Boolean, default=False)
-    last_login = db.Column(db.DateTime(), default=None, nullable=True)
+    address = Column(String, unique=True, nullable=False)
+    private_key = Column(Text, nullable=False)
+    id = Column(Integer, primary_key=True)
+    password = Column(String())
+    is_superuser = Column(Boolean, default=False)
+    last_login = Column(DateTime(), default=None, nullable=True)
     operations = db.Relationship('Operation', backref='person', lazy=True)
 
     def __init__(self, address, private_key, password=None, is_superuser=False, *args, **kwargs):
@@ -31,9 +32,9 @@ class PersonModel(db.Model, UserMixin):
 class ContractModel(db.Model):
     __tablename__ = 'contracts'
     W3 = W3
-    contract_address = db.Column(db.String(255), primary_key=True)
-    abi = db.Column(db.Text, nullable=False)
-    bytecode = db.Column(db.Text, nullable=False)
+    contract_address = Column(String(255), primary_key=True)
+    abi = Column(Text, nullable=False)
+    bytecode = Column(Text, nullable=False)
 
     def __init__(self, contract_address, abi, bytecode=None):
         self.contract_address = contract_address
@@ -71,10 +72,10 @@ class ContractModel(db.Model):
 
 class OperationModel(db.Model):
     __tablename__ = 'operations'
-    id = db.Column(db.Integer, primary_key=True)
-    person = db.Colmn(db.Integer, db.Foreignkey('person.id'), lazy=True)
-    transaction_hash = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime(), nullable=False, default=)
+    id = Column(Integer, primary_key=True)
+    person = Column(Integer, db.ForeignKey('persons.id'))
+    transaction_hash = Column(Text, nullable=False)
+    created_at = Column(DateTime(), nullable=False)
 
 
 class Person(object):
