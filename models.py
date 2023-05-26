@@ -6,11 +6,10 @@ from contract_interaction import submit_transaction_hash, W3
 from sqlalchemy import ForeignKey, Column, String, Text, Integer, Boolean, DateTime
 from sqlalchemy import String
 
+
 class PersonModel(db.Model, UserMixin):
     __tablename__ = 'persons'
 
-    address = Column(String, unique=True, nullable=False)
-    private_key = Column(Text, nullable=False)
     id = Column(Integer, primary_key=True)
     password = Column(String())
     is_superuser = Column(Boolean, default=False)
@@ -40,7 +39,7 @@ class ContractModel(db.Model):
         self.contract_address = contract_address
         self.abi = abi
         self.bytecode = bytecode
-        self.coinbase = W3.eth.coinbase
+        self.coinbase = W3.eth.accounts[0]
 
     def load_contract(self):
         return W3.eth.contract(address=self.contract_address, abi=json.loads(self.abi), bytecode=self.bytecode)
@@ -49,7 +48,7 @@ class ContractModel(db.Model):
     def deploy(cls, abi, bytecode):
 
         contract = cls.W3.eth.contract(abi=abi, bytecode=bytecode).constructor()
-        authenticated = cls.W3.geth.personal.unlock_account(cls.W3.eth.coinbase, '11608168')
+        authenticated = cls.W3.geth.personal.unlock_account(cls.W3.eth.coinbase, '')
         if authenticated:
 
             tx = contract.transact({

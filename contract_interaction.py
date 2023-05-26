@@ -10,7 +10,7 @@ from solcx import compile_source
 
 CONTRACT_CSV_FILEPATH = dirname(__file__) + '/contracts.csv'
 FILEPATH = dirname(__file__) + '/accounts.csv'
-W3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
+W3 = Web3(Web3.HTTPProvider('https://mainnet.infura.io/v3/e5052d63847f40a5b77cbb560ee898c1'))
 private_key = None
 # try:
 #     COINTBASE = W3.eth.coinbase
@@ -24,15 +24,12 @@ private_key = None
 dir_path = os.path.dirname(os.path.realpath(__file__))
 ABI = json.loads(open(f'{dir_path}/contract-abi.txt').read().replace("\n", ""))
 BYTECODE = open(f'{dir_path}/contract-bin.txt', 'r').read().replace("\n", "")
-ACCOUNT = W3.eth.coinbase
+ACCOUNT = "35646431635465464"
 
 
 def compile_source_file():
     with open(f"{dir_path}/smartcontract.sol", "r") as f:
-        print(compile_source(f.read(), output_values=['abi', 'bin']).popitem()[1])
         return compile_source(f.read(), output_values=['abi', 'bin']).popitem()[1]
-
-compile_source_file()
 
 def submit_transaction_hash(transaction_hash):
     while True:
@@ -64,4 +61,3 @@ def create_account(passphrase):
 def execute_smart_contract_function(function, account, private_key):
 
     estimate_gas = function.estimate_gas()
-

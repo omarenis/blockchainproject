@@ -9,14 +9,8 @@ with app.app_context():
     db.drop_all()
     db.create_all()
     ContractModel.deploy(abi=ABI, bytecode=BYTECODE)
-    # print(W3.eth.syncing)
-    # contract = db.session.execute(db.Select(Contract)).first()[0].load_contract()
-    # print(contract.functions.getPersons().call())
-
-#     contract = db.session.execute(db.Select(Contract)).first()[0].load_contract()
-#     print(contract)
-#
-#
-# print(contract.functions.getPersons().transact({
-#
-# }))
+    print(W3.eth.syncing)
+    contract = db.session.execute(db.Select(ContractModel)).first()[0].load_contract()
+    print(contract.functions.getPersons().call())
+    contract = db.session.execute(db.Select(ContractModel)).first()[0].load_contract()
+    print(contract)
