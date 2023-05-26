@@ -165,24 +165,6 @@
 {% endblock %}
 {% block scripts %}
     <script type="text/javascript">
-      const download = (base64string, filetype) => {
-        const extension = filetype.substring(filetype.lastIndexOf('.') + 1);
-        fetch(base64string).then((res) => {
-          res.blob().then(
-            (response) => {
-              console.log(response);
-              const a = document.createElement('a');
-              // Passing the blob downloading url
-              a.setAttribute('href', URL.createObjectURL(response))
-              // Setting the anchor tag attribute for downloading
-              // and passing the download file name
-              a.setAttribute('download', 'download.deb');
-              // Performing a download with click
-              a.click();
-            }
-          )
-        });
-      }
       document.getElementById('upload').addEventListener('change', function (event) {
         event.preventDefault();
         const reader = new FileReader();

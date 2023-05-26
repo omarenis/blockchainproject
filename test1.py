@@ -9,6 +9,3 @@ print(latest_block)
 
 # Get the balance of an account
 balance = w3.eth.get_balance('0x742d35Cc6634C0532925a3b844Bc454e4438f44e')
-print(balance)
-print(w3.eth.accounts)
-account = w3.geth.personal.new_account('11608168')

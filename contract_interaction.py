@@ -10,29 +10,22 @@ from solcx import compile_source
 
 CONTRACT_CSV_FILEPATH = dirname(__file__) + '/contracts.csv'
 FILEPATH = dirname(__file__) + '/accounts.csv'
-W3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
+W3 = Web3(Web3.HTTPProvider('http://localhost:9545'))
 private_key = None
-# try:
-#     COINTBASE = W3.eth.coinbase
-# except Exception as exception:
-#     account = W3.eth.account.create('11608168')
-#     W3.miner.set_etherebase(account.address)
-#     COINTBASE = account.address
-#     private_key = account.privateKey
+from solcx import install_solc
 
+install_solc('latest')
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 ABI = json.loads(open(f'{dir_path}/contract-abi.txt').read().replace("\n", ""))
 BYTECODE = open(f'{dir_path}/contract-bin.txt', 'r').read().replace("\n", "")
-ACCOUNT = W3.eth.coinbase
+ACCOUNT = W3.eth.accounts[0]
 
 
 def compile_source_file():
     with open(f"{dir_path}/smartcontract.sol", "r") as f:
-        print(compile_source(f.read(), output_values=['abi', 'bin']).popitem()[1])
         return compile_source(f.read(), output_values=['abi', 'bin']).popitem()[1]
 
-compile_source_file()
 
 def submit_transaction_hash(transaction_hash):
     while True:
@@ -61,7 +54,14 @@ def create_account(passphrase):
                 }
 
 
-def execute_smart_contract_function(function, account, private_key):
+def run_get_function(function):
+    return function().call()
 
-    estimate_gas = function.estimate_gas()
 
+def execute_set_function(function, params, address):
+    tx = function(*params).transact({
+        'from': address,
+        'nonce': W3.eth.get_transaction_count(W3.eth.accounts[0]),
+        'gas': function.estimate_gas()
+    })
+    return submit_transaction_hash(tx)
