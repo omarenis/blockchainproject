@@ -16,6 +16,7 @@ class PersonModel(db.Model, UserMixin):
 
     id = Column(Integer, primary_key=True)
     password = Column(String())
+    username = Column(String, )
     is_superuser = Column(Boolean, default=False)
     last_login = Column(DateTime(), default=None, nullable=True)
     operations = db.Relationship('OperationModel', backref='person', lazy=True)
@@ -66,8 +67,9 @@ class OperationModel(db.Model):
 
 class Person(object):
 
-    def __init__(self, _id, email, firstname, lastname, location, telephone, image, password=None):
+    def __init__(self, _id, username, email, firstname, lastname, location, telephone, image, password=None):
         self.id = _id
+        self.username = username
         self.password = password
         self.email = email
         self.firstname = firstname

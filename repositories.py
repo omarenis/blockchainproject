@@ -73,7 +73,7 @@ class PersonRepository(object):
         else:
             result.delete()
             self.session.commit()
-            execute_set_function(self.contract.functions.deletePerson, (_id, ), PersonRepository.coinbase)
+            execute_set_function(self.contract.functions.deletePerson, (_id,), PersonRepository.coinbase)
 
     def update_password(self, person_id: int, password):
         person = self.session.execute(db.Select(PersonModel).filter_by(id=person_id)).first()[0]
@@ -108,17 +108,21 @@ class FileRepository(object):
 
     def create(self, file_data: dict):
 
-        execute_set_function(self.contract.contract_object.contract.functions.addFile, (
+        return execute_set_function(self.contract.functions.addFile, (
             file_data['filename'], file_data['file_content']
         ), address=self.coinbase)
 
     def get_file_by_id(self, _id: int):
-        file_contract_data = self.contract.contract_object.functions.getFileById(_id).call()
+        file_contract_data = self.contract.functions.getFileById(_id).call()
         return File(_id=file_contract_data[0], filename=file_contract_data[1], file_content=file_contract_data[2])
 
     def delete(self, _id: int):
         return execute_set_function(self.contract.functions.deleteFile, (_id,), self.coinbase)
 
+    def update(self, _id: int, file_content: str):
+        file_contract_data = self.contract.functions.getFileById(_id).call()
+        file_contract_data[2] = file_content
+        return execute_set_function(self.contract.functions.updateFile, (_id, file_contract_data), self.coinbase)
 
 
 class OperationRepository(object):
@@ -140,9 +144,10 @@ class OperationRepository(object):
         self.session.commit()
 
     def list(self):
-        results = self.session.execute(db.Select(PersonModel).filter_by(is_superuser=False)).all()
+        results = self.session.execute(db.Select(OperationModel)).all()
         operations = []
-        for operation_instance, _ in results:
+        for result in results:
+            operation_instance = result[0]
             person = self.user_repository.get_person_by_id(operation_instance.person_id)
             operations.append(Operation(person=person, filename=operation_instance.filename,
                                         transaction_hash=operation_instance.transaction_hash,

@@ -147,12 +147,12 @@ class FileStorageService(object):
 
     def create(self, filedata, person):
         transaction = self.repository.create(filedata)
-        self.operation_repository.create(**{
+        self.operation_repository.create({
             'operation': 'create file',
             'filename': filedata['filename'],
             'created_at': datetime.now(),
             'person_id': person.id,
-            'transaction_hash': transaction.hash
+            'transaction_hash': transaction.hex()
         })
 
     def update(self, filedata, person):

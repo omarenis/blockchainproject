@@ -7,7 +7,8 @@ from werkzeug import Response
 from flask.views import MethodView
 from app import app, login_manager, session, db
 from models import Person
-from services import login, verify_code, WorkerService, FileStorageService
+from repositories import OperationRepository
+from services import login, verify_code, WorkerService, FileStorageService, CONTRACT
 from flask_login import login_user, login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, FileField, EmailField, PasswordField
@@ -51,6 +52,7 @@ def admin_required(f):
 
 
 def login_controller() -> Union[Response, str]:
+    form = LoginForm()
     if request.method == 'POST':
         try:
             user = login({'email': request.form.get('email'), 'password': request.form.get('password')})
@@ -58,8 +60,7 @@ def login_controller() -> Union[Response, str]:
             if user and user.last_login is None:
                 return redirect(url_for('verify_code', email=user.email))
             else:
-                print(user)
-                return redirect(url_for('index'))
+                return redirect(url_for('workers' if user.is_superuser else 'files'))
         except Exception as exception:
             flash(str(exception), 'error')
     return render_template('public/login.html')
@@ -87,7 +88,8 @@ def upload_file() -> Union[Response, str]:
 
 def get_workers():
     service = WorkerService()
-    return render_template('dashboard/worker_crud.html', workers = service.list())
+    return render_template('dashboard/worker_crud.html', workers=service.list())
+
 
 class WorkerCrud(MethodView):
     userService = WorkerService()
@@ -112,6 +114,11 @@ def file_view():
         service.create(filedata=form.data, person=current_user)
         return 'created !'
     return render_template('dashboard/file_list.html', files=service.list(), form=form)
+
+
+def get_operations():
+    operation_repository = OperationRepository(CONTRACT)
+    return render_template('dashboard/operations.html', operations=operation_repository.list())
 
 
 def worker_create_form():

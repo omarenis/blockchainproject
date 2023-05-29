@@ -4,8 +4,8 @@ from contract_interaction import W3, compile_source_file, submit_transaction_has
 from models import ContractModel, Person, Contract, PersonModel
 from web3.middleware import simple_cache_middleware
 
-from repositories import FileRepository
-from services import FileStorageService, WorkerService
+from repositories import FileRepository, OperationRepository
+from services import FileStorageService, WorkerService, CONTRACT
 
 W3.middleware_onion.add(simple_cache_middleware)
 
@@ -58,9 +58,18 @@ def test_list_workers():
 def test_create_file():
     with app.app_context():
         service = FileStorageService()
+        file = service.create({'filename': 'filename', 'file_content': 'file_content'},
+                              db.session.execute(db.Select(PersonModel).filter_by(id=6)).scalar_one())
 
 
 def test_get_files():
     with app.app_context():
         contract = Contract.load_last_uploaded_contract().contract_object
         print(contract.functions.getFiles().call())
+
+
+def test_get_operations():
+
+    with app.app_context():
+        operation_repository = OperationRepository(CONTRACT)
+        print(operation_repository.list())

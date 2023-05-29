@@ -3,6 +3,7 @@ from flask_wtf.csrf import generate_csrf
 from app import app
 from controllers import login_controller, upload_file, verify_code_controller, WorkerCrud, \
     worker_create_form, file_view
+from models import PersonModel
 
 app.add_url_rule('/', 'index', view_func=login_controller, methods=['GET'])
 app.add_url_rule('/login', 'login', view_func=login_controller, methods=['GET', 'POST'])
@@ -12,4 +13,6 @@ app.add_url_rule('/files', 'files', view_func=file_view, methods=['GET', 'POST']
 app.add_url_rule('/workers', view_func=WorkerCrud.as_view('workers'), methods=['GET', 'POST'])
 app.add_url_rule('/add_worker', view_func=worker_create_form, methods=['GET'])
 if __name__ == '__main__':
+    with app.app_context():
+        PersonModel.create_admin_account()
     app.run()
