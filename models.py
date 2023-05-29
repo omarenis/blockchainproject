@@ -31,6 +31,14 @@ class PersonModel(db.Model, UserMixin):
     def set_password(self, password):
         self.password = generate_password_hash(password)
 
+    @classmethod
+    def create_admin_account(cls):
+        admin = cls()
+        admin.is_superuser = True
+        admin.set_password(password='admin@admin')
+        db.session.add(admin)
+        db.session.commit()
+
 
 class ContractModel(db.Model):
     __tablename__ = 'contracts'
@@ -118,14 +126,14 @@ class Contract(object):
 
 class File(object):
 
-    def __init__(self, id, filename, file_content):
+    def __init__(self, _id, filename, file_content):
         self.id = id
         self.filename = filename
         self.file_content = file_content
 
 
 class Operation(object):
-    def __init__(self, _id: int ,person: Person, filename: str, transaction_hash):
+    def __init__(self, _id: int, person: Person, filename: str, transaction_hash):
         self.id = _id
         self.person = person
         self.filename = filename

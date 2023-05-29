@@ -1,10 +1,11 @@
 import time
 from app import app, db
 from contract_interaction import W3, compile_source_file, submit_transaction_hash, execute_set_function
-from models import ContractModel, Person, Contract
+from models import ContractModel, Person, Contract, PersonModel
 from web3.middleware import simple_cache_middleware
 
 from repositories import FileRepository
+from services import FileStorageService, WorkerService
 
 W3.middleware_onion.add(simple_cache_middleware)
 
@@ -12,6 +13,12 @@ W3.middleware_onion.add(simple_cache_middleware)
 def test_deploy():
     with app.app_context():
         Contract.deploy()
+
+
+def test_get_person_by_id():
+    with app.app_context():
+        result = db.session.execute(db.Select(PersonModel).filter_by(id=6)).scalar_one_or_none()
+        print(result)
 
 
 def test_create_person():
@@ -27,23 +34,30 @@ def test_create_person():
         }))
 
 
-def test_get_persons():
+def test_crate_worker():
     with app.app_context():
-        contract = Contract.load_last_uploaded_contract().contract_object
-        fileRepository = FileRepository(contract)
-        fileRepository.get_files()
-        data = dict()
-        print(contract.functions.getPersons().call())
-        data['id'], data['firstname'], data['lastname'], data['email'], data['telephone'], data['location'], data[
-            'image'] = contract.functions.getPersonById(2).call()
+        workerService = WorkerService()
+        worker = workerService.create({
+            'firstname': 'test',
+            'lastname': 'test',
+            'email': 'test@test.com',
+            'telephone': '+21624127616',
+            'location': 'test location',
+            'image': 'image',
+            'password': 'password'
+        })
+        print(worker.__dict__)
+
+
+def test_list_workers():
+    with app.app_context():
+        workerService = WorkerService()
+        workers = workerService.list()
 
 
 def test_create_file():
     with app.app_context():
-        W3.geth.personal.unlock_account(W3.eth.accounts[0], '')
-        contract = Contract.load_last_uploaded_contract().contract_object
-        execute_set_function(contract.functions.addFile, ('filename', 'fileObject'), W3.eth.accounts[0])
-
+        service = FileStorageService()
 
 
 def test_get_files():

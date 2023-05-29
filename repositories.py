@@ -10,19 +10,38 @@ class PersonRepository(object):
         self.session = db.session
         self.contract = contract
 
+    def list(self):
+        results = self.session.execute(db.Select(PersonModel).filter_by(is_superuser=False)).all()
+        persons = []
+        for result in results:
+            person_contact_data = self.contract.functions.getPersonById(int(result[0].get_id())).call()
+            persons.append(Person(**{
+                'firstname': person_contact_data[1],
+                'lastname': person_contact_data[2],
+                'email': person_contact_data[3],
+                'telephone': person_contact_data[4],
+                'location': person_contact_data[5],
+                'image': person_contact_data[6],
+                '_id': int(result[0].get_id())
+            }))
+        return persons
+
     def create(self, person_data: dict):
         person = PersonModel()
+        person.is_superuser = False
         person.set_password(password=person_data.get('password'))
         self.session.add(person)
         self.session.commit()
+        print(person.get_id())
         execute_set_function(self.contract.functions.createPerson, (
-            person.get_id(), person_data.get('firstname'),
+            int(person.get_id()), person_data.get('firstname'),
             person_data.get('lastname'),
             person_data.get('email'),
             person_data.get('telephone'),
             person_data.get('location'),
             person_data.get('image')
         ), address=Contract.coinbase)
+        person_data['_id'] = int(person.get_id())
         return Person(**person_data)
 
     def get_person_by_id(self, _id: int):
@@ -35,8 +54,26 @@ class PersonRepository(object):
             'telephone': person_contact_data[4],
             'location': person_contact_data[5],
             'image': person_contact_data[6],
-            'id': person_instance.id
+            '_id': int(person_instance.get_id())
         })
+
+    def update(self, data: dict, _id: int):
+        result = self.session.execute(db.Select(PersonModel).filter_by(id=_id)).scalar_one_or_none()
+        if result is None:
+            raise ValueError('person not found with the current id')
+
+        execute_set_function(self.contract.functions.updatePerson, (
+            int(result.get_id()), data.get('firstname'), data.get('lastname'), data.get('telephone'),
+            data.get('location'), data.get('image')), PersonRepository.coinbase)
+
+    def delete(self, _id: int):
+        result = self.session.execute(db.Select(PersonModel).filter_by(id=_id)).scalar_one_or_none()
+        if result is None:
+            raise ValueError('person not found')
+        else:
+            result.delete()
+            self.session.commit()
+            execute_set_function(self.contract.functions.deletePerson, (_id, ), PersonRepository.coinbase)
 
     def update_password(self, person_id: int, password):
         person = self.session.execute(db.Select(PersonModel).filter_by(id=person_id)).first()[0]
@@ -65,7 +102,7 @@ class FileRepository(object):
     def get_files(self):
         files = self.contract.functions.getFiles().call()
         if files:
-            return [File(id=i[0], filename=i[1], file_content=i[2]) for i in files]
+            return [File(_id=i[0], filename=i[1], file_content=i[2]) for i in files]
         else:
             return []
 
@@ -77,10 +114,11 @@ class FileRepository(object):
 
     def get_file_by_id(self, _id: int):
         file_contract_data = self.contract.contract_object.functions.getFileById(_id).call()
-        return File(id=file_contract_data[0], filename=file_contract_data[1], file_content=file_contract_data[2])
+        return File(_id=file_contract_data[0], filename=file_contract_data[1], file_content=file_contract_data[2])
 
     def delete(self, _id: int):
         return execute_set_function(self.contract.functions.deleteFile, (_id,), self.coinbase)
+
 
 
 class OperationRepository(object):

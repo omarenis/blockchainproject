@@ -59,6 +59,7 @@ def run_get_function(function):
 
 
 def execute_set_function(function, params, address):
+    W3.geth.personal.unlock_account(address, '')
     return function(*params).transact({
         'from': address,
         'nonce': W3.eth.get_transaction_count(address),

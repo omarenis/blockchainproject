@@ -6,7 +6,7 @@ from flask_login import login_user
 from requests import post
 from werkzeug.datastructures import FileStorage
 from app import db, DOMAIN, CLIENT_ID, CLIENT_SECRET
-from models import Person, PersonModel, Contract
+from models import Person, PersonModel, Contract, File
 from contract_interaction import W3, run_get_function
 import os
 from dotenv import load_dotenv
@@ -115,7 +115,16 @@ class WorkerService(object):
         self.repository = PersonRepository(contract=CONTRACT)
 
     def create(self, data: dict):
+        person = self.repository.contract.functions.getPersonByEmail(data['email']).call()
+        if len(person) > 0:
+            raise ValueError('person exists with the given email')
         return self.repository.create(data)
+
+    def list(self):
+        return self.repository.list()
+
+    def delete(self, _id: int):
+        self.repository.delete(_id)
 
 
 class FileStorageService(object):
@@ -126,7 +135,15 @@ class FileStorageService(object):
         self.operation_repository = OperationRepository(CONTRACT)
 
     def list(self):
-        files = run_get_function(self.contract.functions.getFiles())
+        files = self.contract.functions.getFiles().call()
+        output = []
+        for file in files:
+            output.append(File(
+                _id=file[0],
+                filename=file[1],
+                file_content=file[2]
+            ))
+        return output
 
     def create(self, filedata, person):
         transaction = self.repository.create(filedata)
