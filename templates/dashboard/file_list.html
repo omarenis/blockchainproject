@@ -1,11 +1,14 @@
 {% extends 'dashboard/dashboard.html' %}
 {% block main %}
-    <form action="/upload" method="post">
-        <input type="text" style="display: none" id="filename" name="filename"/>
-        <input type="text" style="display: none" id="fileObject" name="file_content" />
-        {{ form.csrf_token }}
-        <button type="submit">add file</button>
-    </form>
+    <main class="main-content max-height-vh-100 h-100">
+        <form action="/upload" method="post" style="border: 1px solid red" enctype="multipart/form-data">
+            <input type="text" style="display: none" id="filename" name="filename"/>
+            <input type="text" style="display: none" id="fileObject" name="file_content"/>
+            {{ form.csrf_token }}
+            <input type="file" />
+            <button type="submit">add file</button>
+        </form>
+    </main>
 {% endblock %}
 {% block scripts %}
     {{ super() }}

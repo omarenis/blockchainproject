@@ -1,6 +1,7 @@
 {% extends 'dashboard/dashboard.html' %}
 {% block main %}
     <form class="main-content max-height-vh-100 h-100">
+    {{ form.csrf_token }}
         <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl ">
             <div class="container-fluid py-1 px-3">
                 <nav aria-label="breadcrumb">

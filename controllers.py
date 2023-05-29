@@ -7,7 +7,7 @@ from werkzeug import Response
 from flask.views import MethodView
 from app import app, login_manager, session, db
 from models import Person
-from services import login, signup, verify_code, WorkerService, FileStorageService
+from services import login, verify_code, WorkerService, FileStorageService
 from flask_login import login_user, login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, FileField
@@ -66,20 +66,6 @@ def verify_code_controller():
     return render_template('public/verify_code.html', email=request.args.get('email'))
 
 
-def signup_controller() -> Union[Response, str]:
-    if request.method == 'POST':
-        try:
-            signup({'email': request.form.get('email'),
-                    'firstname': request.form.get('firstname'),
-                    'lastname': request.form.get('lastname'),
-                    'password': request.form.get('password')
-                    })
-            return redirect(url_for('login'))
-        except Exception as e:
-            flash(str(e), 'error')
-    return render_template('public/signnup.html')
-
-
 @login_required
 def upload_file() -> Union[Response, str]:
     service = FileStorageService()
@@ -117,17 +103,13 @@ class WorkerCrud(MethodView):
         return Response()
 
 
-class FileView(MethodView):
+def file_view():
     service = FileStorageService()
     form = FileForm()
-
-    def get(self):
-        return render_template('dashboard/file_list.html', files=self.service.list(), form=self.form)
-
-    def post(self):
-        self.service.create(filedata=self.form.data, person=current_user)
+    if request.method == 'POST':
+        service.create(filedata=form.data, person=current_user)
         return 'created !'
-
+    return render_template('dashboard/file_list.html', files=service.list(), form=form)
 
 def worker_create_form():
     return render_template('dashboard/new_worker.html')
