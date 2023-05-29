@@ -5,10 +5,23 @@ import requests as requests
 from flask import request, url_for, redirect, render_template, flash
 from werkzeug import Response
 from flask.views import MethodView
-from models import Person
-from services import login, signup, verify_code
 from app import app, login_manager, session, db
+from models import Person
+from services import login, signup, verify_code, WorkerService, FileStorageService
 from flask_login import login_user, login_required, current_user
+from flask_wtf import FlaskForm
+from wtforms import StringField, FileField
+from wtforms.validators import DataRequired
+
+
+class LoginForm(FlaskForm):
+    username = StringField(name='username', validators=[DataRequired()])
+    password = StringField(name='password', validators=[DataRequired()])
+
+
+class FileForm(FlaskForm):
+    filename = StringField(name='filename')
+    fileObject = StringField(name='fileObject')
 
 
 @login_manager.user_loader
@@ -67,15 +80,17 @@ def signup_controller() -> Union[Response, str]:
     return render_template('public/signnup.html')
 
 
+@login_required
 def upload_file() -> Union[Response, str]:
+    service = FileStorageService()
+    form = FileForm(request.form)
     if request.method == 'POST':
-        json_file = request.files.get('file')
-        file_to_save_in_blockhain = str(json.loads(json_file.stream.read()))
-        return redirect(url_for('upload'))
-    return render_template('public/upload_json_file.html')
+        service.create(form.data, person=current_user)
+    return render_template('dashboard/upload_file.html', form=form)
 
 
 class WorkerCrud(MethodView):
+    userService = WorkerService()
 
     def get(self):
         return render_template("dashboard/worker_crud.html",
@@ -100,6 +115,18 @@ class WorkerCrud(MethodView):
         db.session.add(person)
         db.session.commit()
         return Response()
+
+
+class FileView(MethodView):
+    service = FileStorageService()
+    form = FileForm()
+
+    def get(self):
+        return render_template('dashboard/file_list.html', files=self.service.list(), form=self.form)
+
+    def post(self):
+        self.service.create(filedata=self.form.data, person=current_user)
+        return 'created !'
 
 
 def worker_create_form():

@@ -6,8 +6,10 @@ contract StorageJsonFile
     uint256 private numberPersons;
     uint256 private numberFiles;
     uint256 [] private personIds;
+
     struct JSonFileRef
     {
+        uint256 id;
         string filename;
         string fileObject;
     }
@@ -18,7 +20,6 @@ contract StorageJsonFile
         string firstname;
         string lastname;
         string email;
-        address _address;
         string telephone;
         string location;
         string image;
@@ -32,11 +33,9 @@ contract StorageJsonFile
         numberFiles = 0;
     }
 
-
-
-    function addFile(JSonFileRef memory jSonFileRef) public
+    function addFile(string memory filename, string memory fileObject) public
     {
-        files[numberFiles] = jSonFileRef;
+        files[numberFiles] = JSonFileRef(numberFiles, filename, fileObject);
         fileIds.push(numberFiles);
         numberFiles ++;
     }
@@ -71,9 +70,9 @@ contract StorageJsonFile
     }
 
 
-    function createPerson(uint256 id, string memory firstname, string memory lastname, string memory email, address _address, string memory telephone, string memory location, string memory image) public
+    function createPerson(uint256 id, string memory firstname, string memory lastname, string memory email, string memory telephone, string memory location, string memory image) public
     {
-        persons[id] = Person(id, firstname, lastname, email, _address, telephone, location, image);
+        persons[id] = Person(id, firstname, lastname, email, telephone, location, image);
         personIds.push(id);
         numberPersons ++;
     }
@@ -88,12 +87,11 @@ contract StorageJsonFile
         return person_objects;
     }
 
-    function updatePerson(uint256 personId, string memory firstname, string memory lastname, string memory email,
-        string memory telephone, string memory location, string memory image) public
+    function updatePerson(uint256 personId, string memory firstname, string memory lastname, string memory telephone,
+        string memory location, string memory image) public
     {
         persons[personId].firstname = firstname;
         persons[personId].lastname = lastname;
-        persons[personId].email = email;
         persons[personId].telephone = telephone;
         persons[personId].location = location;
         persons[personId].image = image;
@@ -122,5 +120,9 @@ contract StorageJsonFile
             }
         }
         revert('Not found');
+    }
+
+    function getPersonById(uint256 id) public view returns(Person memory) {
+        return persons[id];
     }
 }

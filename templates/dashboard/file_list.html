@@ -1,16 +1,11 @@
 {% extends 'dashboard/dashboard.html' %}
 {% block main %}
-    <main class="main-content position-relative border-radius-lg ">
-
-        <form class="container" style="border: 2px solid red" id="form">
-            {{ form.csrf_token }}
-            <fieldset>
-                <input type="file" id="fileUpload"/>
-                <input type="text" id="filename" name="filename"/>
-                <input type="text" id="fileObject" name="fileObject"/>
-            </fieldset>
-        </form>
-    </main>
+    <form action="/upload" method="post">
+        <input type="text" style="display: none" id="filename" name="filename"/>
+        <input type="text" style="display: none" id="fileObject" name="file_content" />
+        {{ form.csrf_token }}
+        <button type="submit">add file</button>
+    </form>
 {% endblock %}
 {% block scripts %}
     {{ super() }}
@@ -50,7 +45,7 @@
 
       document.getElementById('form').addEventListener('submit', function () {
         const xhttp = new XMLHttpRequest();
-        xhttp.setRequestHeader('X-CSRFToken',   document.getElementById('csrf_token').value);
+        xhttp.setRequestHeader('X-CSRFToken', document.getElementById('csrf_token').value);
         xhttp.onreadystatechange = function () {
           if (this.readyState === 4 && this.status === 201) {
             document.getElementById("demo").innerHTML = this.responseText;

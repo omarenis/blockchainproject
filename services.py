@@ -4,9 +4,10 @@ import string
 from datetime import datetime
 from flask_login import login_user
 from requests import post
+from werkzeug.datastructures import FileStorage
 from app import db, DOMAIN, CLIENT_ID, CLIENT_SECRET
-from models import Person
-from contract_interaction import W3
+from models import Person, PersonModel, Contract
+from contract_interaction import W3, run_get_function
 import os
 from dotenv import load_dotenv
 from cryptography.fernet import Fernet
@@ -15,6 +16,12 @@ import base64
 from eth_account import Account
 import urllib
 from uri.uri import URI
+from app import app
+
+from repositories import PersonRepository, FileRepository, OperationRepository
+
+with app.app_context():
+    CONTRACT = Contract.load_last_uploaded_contract().contract_object
 
 load_dotenv()
 FERNET = Fernet(
@@ -37,9 +44,9 @@ def get_random_string(length):
 
 
 def login(data: dict):
-    person = db.session.execute(db.select(Person).filter_by(email=data.get('email'))).scalar_one_or_none()
+    person = db.session.execute(db.select(PersonModel).filter_by(email=data.get('email'))).scalar_one_or_none()
     print("person = ", type(person))
-    if isinstance(person, Person):
+    if isinstance(person, PersonModel):
         if person.check_password(data.get('password')):
             if person.last_login is None:
                 send_code(person.email)
@@ -64,14 +71,6 @@ def send_code(email):
     if response.status_code == 200:
         return json.loads(response.text)
     raise Exception('bad request or invalid code')
-
-
-def signup(data: dict):
-    person = Person(email=data.get('email'), password=data.get('password'), firstname=data.get('firstname'),
-                    lastname=data.get('lastname'))
-    db.session.add(person)
-    db.session.commit()
-    return "Message sent!"
 
 
 def verify_code(email, code):
@@ -112,21 +111,48 @@ def reset_password(email, action, code=None):
 
 class WorkerService(object):
 
-    def __init__(self, contract_address, abi):
-        self.contract = W3.eth.contract(address=contract_address, abi=abi)
+    def __init__(self):
+        self.repository = PersonRepository(contract=CONTRACT)
 
     def create(self, data: dict):
-        person = self.contract.functions.getPersonByEmail(data['email']).call()
-        if person:
-            raise ValueError('email can not be used for this worker')
-
-        address = W3.geth.personal.new_account(data.get('email'))
-        wallet = W3.geth.personal.list_wallets()[-1]
-        private_key = encode_private_key(wallet.accounts[0].url, data['email'])
-        is_superuser = False
+        return self.repository.create(data)
 
 
 class FileStorageService(object):
 
-    def __init__(self, contract_address):
-        self.contract_address = contract_address
+    def __init__(self):
+        self.contract = CONTRACT
+        self.repository = FileRepository(self.contract)
+        self.operation_repository = OperationRepository(CONTRACT)
+
+    def list(self):
+        files = run_get_function(self.contract.functions.getFiles())
+
+    def create(self, filedata, person):
+        transaction = self.repository.create(filedata)
+        self.operation_repository.create(**{
+            'operation': 'create file',
+            'filename': filedata['filename'],
+            'created_at': datetime.now(),
+            'person_id': person.id,
+            'transaction_hash': transaction.hash
+        })
+
+    def update(self, filedata, person):
+        transaction = self.repository.update(file_content=filedata['file_content'])
+        self.operation_repository.create(**{
+            'operation': 'update file',
+            'filename': filedata['filename'],
+            'created_at': datetime.now(),
+            'person_id': person.id,
+            'transaction_hash': transaction.hash
+        })
+
+    def delete(self, _id, person):
+        transaction = self.repository.delete(_id=_id)
+        self.operation_repository.create(**{
+            'operation': 'delete file',
+            'created_at': datetime.now(),
+            'person_id': person.id,
+            'transaction_hash': transaction.hash
+        })
