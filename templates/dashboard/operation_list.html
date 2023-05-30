@@ -1,0 +1,85 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block main %}
+    <main class="main-content  max-height-vh-100 h-100">
+        <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl ">
+            <div class="container-fluid py-1 px-3">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+                        <li class="breadcrumb-item text-sm">
+                            <a class="text-white" href="javascript:">
+                                <i class="ni ni-box-2"></i>
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white"
+                                                               href="javascript:">Pages</a></li>
+                        <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white"
+                                                               href="javascript:">History</a></li>
+                        <li class="breadcrumb-item text-sm text-white active" aria-current="page">Operations</li>
+                    </ol>
+                    <h6 class="font-weight-bolder text-white">Operations</h6>
+                </nav>
+                <div class="sidenav-toggler sidenav-toggler-inner d-xl-block d-none me-auto">
+                    <a href="javascript:" class="nav-link text-body p-0">
+                        <div class="sidenav-toggler-inner">
+                            <i class="sidenav-toggler-line bg-white"></i>
+                            <i class="sidenav-toggler-line bg-white"></i>
+                            <i class="sidenav-toggler-line bg-white"></i>
+                        </div>
+                    </a>
+                </div>
+                <div class="collapse navbar-collapse me-md-0 me-sm-4 mt-sm-0 mt-2" id="navbar">
+                    <ul class="navbar-nav justify-content-end ms-auto">
+                        <li class="nav-item d-xl-none ps-3 pe-0 d-flex align-items-center">
+                            <a href="javascript:" class="nav-link text-body p-0" id="iconNavbarSidenav">
+                                <div class="sidenav-toggler-inner">
+                                    <i class="sidenav-toggler-line bg-white"></i>
+                                    <i class="sidenav-toggler-line bg-white"></i>
+                                    <i class="sidenav-toggler-line bg-white"></i>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="container-fluid mt-5">
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">List of Operations Search</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-flush" id="datatable-search">
+                                <thead class="thead-light">
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th class="text-center">filename</th>
+                                    <th class="text-center">date operation</th>
+                                    {% if  current_user.is_superuser %}
+                                        <th class="text-center">firstname and lastname worker</th>
+                                        <th class="text-center">username worker</th>
+                                    {% endif %}
+                                    <th class="text-center">transaction</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for operation in operations %}
+                                    <tr>
+                                        <td class="text-sm font-weight-normal text-center">{{ operation.id }}</td>
+                                        <td class="text-sm font-weight-normal text-center">{{ operation.filename }}</td>
+                                        <td class="text-sm font-weight-normal text-center">{{ operation.created_at.strftime("%b %d, %Y") }}</td>
+                                        <td class="text-sm font-weight-normal text-center">{{ operation.person.firstname }} {{ operation.person.lastname }}</td>
+                                        <td class="text-sm font-weight-normal text-center">{{ operation.person.username }}</td>
+                                        <td class="text-sm font-weight-normal text-center">{{ operation.transaction_hash }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

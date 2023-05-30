@@ -31,7 +31,7 @@
                             <ul class="nav ms-4">
                                 <li class="nav-item ">
                                     <a class="nav-link "
-                                       href="#profileExample">
+                                       href="{{ url_for('workers') }}">
                                         <span class="sidenav-mini-icon"> L </span>
                                         <span class="sidenav-normal"> Liste des utilisateurs <b
                                                 class="caret"></b></span>
@@ -39,7 +39,7 @@
                                 </li>
                                 <li class="nav-item ">
                                     <a class="nav-link "
-                                       href="#profileExample">
+                                       href="{{ url_for('worker') }}">
                                         <span class="sidenav-mini-icon"> N </span>
                                         <span class="sidenav-normal"> Nouveau utilisateur <b class="caret"></b></span>
                                     </a>
@@ -59,17 +59,10 @@
                             <ul class="nav ms-4">
                                 <li class="nav-item ">
                                     <a class="nav-link "
-                                       href="#profileExample">
+                                       href="{{ url_for('files') }}">
                                         <span class="sidenav-mini-icon"> L </span>
                                         <span class="sidenav-normal"> Liste des fichiers <b
                                                 class="caret"></b></span>
-                                    </a>
-                                </li>
-                                <li class="nav-item ">
-                                    <a class="nav-link "
-                                       href="#profileExample">
-                                        <span class="sidenav-mini-icon"> N </span>
-                                        <span class="sidenav-normal"> Nouveau fichier <b class="caret"></b></span>
                                     </a>
                                 </li>
                             </ul>
@@ -87,7 +80,7 @@
                             <ul class="nav ms-4">
                                 <li class="nav-item ">
                                     <a class="nav-link "
-                                       href="#profileExample">
+                                       href="{{ url_for('operations') }}">
                                         <span class="sidenav-mini-icon"> L </span>
                                         <span class="sidenav-normal"> Liste des operations <b
                                                 class="caret"></b></span>

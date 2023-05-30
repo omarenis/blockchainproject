@@ -2,6 +2,7 @@
 {% block main %}
     <form class="main-content max-height-vh-100 h-100">
     {{ form.csrf_token }}
+        <input type="text" id="image" style="display: none" value="" name="image">
         <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl ">
             <div class="container-fluid py-1 px-3">
                 <nav aria-label="breadcrumb">
@@ -55,13 +56,14 @@
                             <div class="col-6">
                                 <div class="container d-block">
                                     <img src="{{ url_for('static', filename='img/upload_example.png') }}"
-                                         id="uploadedImage" class="w-100 min-vh-50" style="border: 1px; height: 10vh"
+                                         id="uploadedImage" class="w-100 min-vh-50" style="border: 1px; min-height: 15vh"
                                          alt="image of worker"
                                     />
                                     <label class="btn btn-outline-success mt-2 text-center align-self-center"
                                            for="upload" id="uploadLabel">
                                         upload image of worker
-                                        <input type="file" accept="*/*" class="d-none" id="upload"/>
+                                        <input type="text" name="image" style="display: none" value="" />
+                                        <input type="file" accept="image/*" class="d-none" id="upload" required/>
                                     </label>
                                 </div>
                             </div>
@@ -86,10 +88,6 @@
                                            placeholder="example@email.com">
                                 </div>
                                 <label class="form-label mt-4">Confirm Email</label>
-                                <div class="input-group">
-                                    <input id="confirmation" name="confirmation" class="form-control" type="email"
-                                           placeholder="example@email.com">
-                                </div>
                                 <label class="form-label mt-4">Your location</label>
                                 <div class="input-group">
                                     <input id="location" name="location" class="form-control" type="text"
@@ -97,29 +95,11 @@
                                 </div>
                                 <label class="form-label mt-4">Phone Number</label>
                                 <div class="input-group">
-                                    <input id="phone" name="phone" class="form-control" type="number"
+                                    <input id="phone" name="telephone" class="form-control" type="number"
                                            placeholder="+40 735 631 620">
                                 </div>
                             </div>
-                            <div class="col-6">
 
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6">
-
-                            </div>
-                            <div class="col-6">
-
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6">
-
-                            </div>
-                            <div class="col-6">
-
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -131,11 +111,11 @@
                     <div class="card-body pt-0">
                         <label class="form-label">New password</label>
                         <div class="form-group">
-                            <input class="form-control" type="password" placeholder="New password">
+                            <input class="form-control" type="password" placeholder="New password" name="password">
                         </div>
                         <label class="form-label">Confirm new password</label>
                         <div class="form-group">
-                            <input class="form-control" type="password" placeholder="Confirm password">
+                            <input class="form-control" type="password" placeholder="Confirm password" name="confirm">
                         </div>
                         <h5 class="mt-5">Password requirements</h5>
                         <p class="text-muted mb-2">
@@ -158,7 +138,7 @@
                     </div>
                 </div>
                 <div class="d-flex flex-row-reverse w-100">
-                    <button class="btn bg-gradient-dark btn-sm float-end mt-6 mb-0"> Create Worker</button>
+                    <button class="btn bg-gradient-dark btn-sm float-end mt-6 mb-0" type="submit"> Create Worker</button>
                 </div>
             </div>
         </div>
@@ -171,7 +151,6 @@
         const reader = new FileReader();
         reader.onload = () => {
           document.getElementById('uploadedImage').src = reader.result;
-          download(reader.result, event.target.files[0].name);
         }
         reader.readAsDataURL(event.target.files[0]);
       })

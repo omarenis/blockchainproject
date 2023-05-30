@@ -6,10 +6,10 @@ from flask import request, url_for, redirect, render_template, flash, jsonify
 from werkzeug import Response
 from flask.views import MethodView
 from app import app, login_manager, session, db
-from models import Person
+from models import Person, PersonModel
 from repositories import OperationRepository
 from services import login, verify_code, WorkerService, FileStorageService, CONTRACT
-from flask_login import login_user, login_required, current_user
+from flask_login import login_user, login_required, current_user, logout_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, FileField, EmailField, PasswordField
 from wtforms.validators import DataRequired
@@ -26,18 +26,21 @@ class WorkerForm(FlaskForm):
     email = EmailField(name='email', validators=[DataRequired()])
     telephone = EmailField(name='telephone', validators=[DataRequired()])
     location = StringField(name='location', validators=[DataRequired()])
+    username = StringField(name='username', validators=[DataRequired()])
     image = StringField(name='image', validators=[DataRequired()])
     password = PasswordField(name='password', validators=[DataRequired()])
+    confirm = PasswordField(name='confirm', validators=[DataRequired()])
 
 
 class FileForm(FlaskForm):
-    filename = StringField(name='filename')
-    fileObject = StringField(name='fileObject')
+    filename = StringField(name='filename', validators=[DataRequired()])
+    file_content = StringField(name='file_content', validators=[DataRequired()])
+    file_id = StringField(name='file_id')
 
 
 @login_manager.user_loader
 def load_user(user_id) -> str:
-    return Person.query.get(user_id)
+    return PersonModel.query.get(user_id)
 
 
 def admin_required(f):
@@ -55,15 +58,14 @@ def login_controller() -> Union[Response, str]:
     form = LoginForm()
     if request.method == 'POST':
         try:
-            user = login({'email': request.form.get('email'), 'password': request.form.get('password')})
-            print(user)
-            if user and user.last_login is None:
+            user = login({'username': form.data.get('username'), 'password': request.form.get('password')})
+            if user and user.is_superuser is False and user.last_login is None:
                 return redirect(url_for('verify_code', email=user.email))
             else:
                 return redirect(url_for('workers' if user.is_superuser else 'files'))
         except Exception as exception:
             flash(str(exception), 'error')
-    return render_template('public/login.html')
+    return render_template('public/login.html', form=form)
 
 
 def verify_code_controller():
@@ -78,47 +80,52 @@ def verify_code_controller():
 
 
 @login_required
-def upload_file() -> Union[Response, str]:
-    service = FileStorageService()
-    form = FileForm(request.form)
-    if request.method == 'POST':
-        service.create(form.data, person=current_user)
-    return render_template('dashboard/upload_file.html', form=form)
-
-
+@admin_required
 def get_workers():
     service = WorkerService()
     return render_template('dashboard/worker_crud.html', workers=service.list())
 
 
-class WorkerCrud(MethodView):
-    userService = WorkerService()
-
-    def get(self):
-        return render_template("dashboard/worker_crud.html",
-                               workers=db.session.execute(db.select(Person).filter_by(is_superuser=False)))
-
-    def post(self):
-        form = WorkerForm(request.form)
-        try:
-            worker = self.userService.create(form.data)
-            return jsonify(worker.__dict__), 201
-        except ValueError as exception:
-            return jsonify({'message': str(exception)}), 400
+@login_required
+def worker_form():
+    worker_service = WorkerService()
+    form = WorkerForm(request.form)
+    try:
+        worker = worker_service.create(form.data)
+        return redirect(url_for('workers' if current_user.is_superuser else 'files'))
+    except ValueError as exception:
+        flash(str(exception), 'error')
+    return render_template('dashboard/new_worker.html')
 
 
+@login_required
+def delete_file():
+    file_service = FileStorageService()
+    _id = int(request.form.get('id'))
+    file_service.delete(_id, current_user)
+    return jsonify(message='file deleted'), 200
+
+@login_required
 def file_view():
     service = FileStorageService()
     form = FileForm()
     if request.method == 'POST':
-        service.create(filedata=form.data, person=current_user)
-        return 'created !'
+        if form.data.get('file_id') is not None:
+            service.update({'file_content': form.data.get('file_content'), 'file_id': int(form.data.get('file_id'))},
+                           person=current_user)
+            flash('file updated successfully', 'success')
+        else:
+            service.create(filedata=form.data, person=current_user)
+            flash('file created successfully', 'success')
     return render_template('dashboard/file_list.html', files=service.list(), form=form)
 
 
+@login_required
+@admin_required
 def get_operations():
     operation_repository = OperationRepository(CONTRACT)
-    return render_template('dashboard/operations.html', operations=operation_repository.list())
+    print(current_user.is_superuser)
+    return render_template('dashboard/operation_list.html', operations=operation_repository.list())
 
 
 def worker_create_form():
@@ -151,3 +158,8 @@ def numverify():
 
         return redirect(url_for('result', acc_key=acc_key, email=email, format_valid=format_valid,
                                 disposable=disposable, score=score, mx_found=mx_found))
+
+
+def logout():
+    logout_user()
+    return redirect(url_for('login'))

@@ -16,6 +16,7 @@ class PersonRepository(object):
         for result in results:
             person_contact_data = self.contract.functions.getPersonById(int(result[0].get_id())).call()
             persons.append(Person(**{
+                'username': result[0].username,
                 'firstname': person_contact_data[1],
                 'lastname': person_contact_data[2],
                 'email': person_contact_data[3],
@@ -29,10 +30,10 @@ class PersonRepository(object):
     def create(self, person_data: dict):
         person = PersonModel()
         person.is_superuser = False
+        person.username = person_data.get('username')
         person.set_password(password=person_data.get('password'))
         self.session.add(person)
         self.session.commit()
-        print(person.get_id())
         execute_set_function(self.contract.functions.createPerson, (
             int(person.get_id()), person_data.get('firstname'),
             person_data.get('lastname'),
@@ -54,13 +55,17 @@ class PersonRepository(object):
             'telephone': person_contact_data[4],
             'location': person_contact_data[5],
             'image': person_contact_data[6],
-            '_id': int(person_instance.get_id())
+            '_id': int(person_instance.get_id()),
+            'username': person_instance.username
         })
 
     def update(self, data: dict, _id: int):
         result = self.session.execute(db.Select(PersonModel).filter_by(id=_id)).scalar_one_or_none()
         if result is None:
             raise ValueError('person not found with the current id')
+        if result.username != data.get('username'):
+            result.username = data.get('username')
+            db.session.commit()
 
         execute_set_function(self.contract.functions.updatePerson, (
             int(result.get_id()), data.get('firstname'), data.get('lastname'), data.get('telephone'),
@@ -82,14 +87,6 @@ class PersonRepository(object):
         person.set_password(password)
         db.session.commit()
         return person
-
-    def delete(self, _id: int):
-
-        person = self.session.execute(db.Select(PersonModel).filter_by(id=_id))[0]
-        if person is None:
-            raise ValueError('person not found with the specfic id')
-        person.delete()
-        execute_set_function(self.contract.functions.deletePerson, (_id,), self.coinbase)
 
 
 class FileRepository(object):
@@ -120,9 +117,7 @@ class FileRepository(object):
         return execute_set_function(self.contract.functions.deleteFile, (_id,), self.coinbase)
 
     def update(self, _id: int, file_content: str):
-        file_contract_data = self.contract.functions.getFileById(_id).call()
-        file_contract_data[2] = file_content
-        return execute_set_function(self.contract.functions.updateFile, (_id, file_contract_data), self.coinbase)
+        return execute_set_function(self.contract.functions.updateFile, (_id, file_content), self.coinbase)
 
 
 class OperationRepository(object):
@@ -151,5 +146,5 @@ class OperationRepository(object):
             person = self.user_repository.get_person_by_id(operation_instance.person_id)
             operations.append(Operation(person=person, filename=operation_instance.filename,
                                         transaction_hash=operation_instance.transaction_hash,
-                                        _id=operation_instance.id))
+                                        _id=operation_instance.id, created_at=operation_instance.created_at))
         return operations

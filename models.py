@@ -36,6 +36,7 @@ class PersonModel(db.Model, UserMixin):
     def create_admin_account(cls):
         admin = cls()
         admin.is_superuser = True
+        admin.username = 'admin'
         admin.set_password(password='admin@admin')
         db.session.add(admin)
         db.session.commit()
@@ -97,7 +98,10 @@ class Contract(object):
 
     @classmethod
     def load_last_uploaded_contract(cls):
-        contract_instance = db.session.execute(db.Select(ContractModel)).all()[-1][0]
+        contract = db.session.execute(db.Select(ContractModel)).first()
+        if contract is None:
+            Contract.deploy()
+        contract_instance = db.session.execute(db.Select(ContractModel)).first()[0]
         return Contract(abi=contract_instance.abi, contract_address=contract_instance.contract_address)
 
     @classmethod
@@ -129,14 +133,15 @@ class Contract(object):
 class File(object):
 
     def __init__(self, _id, filename, file_content):
-        self.id = id
+        self.id = _id
         self.filename = filename
         self.file_content = file_content
 
 
 class Operation(object):
-    def __init__(self, _id: int, person: Person, filename: str, transaction_hash):
+    def __init__(self, _id: int, person: Person, filename: str, transaction_hash, created_at):
         self.id = _id
         self.person = person
         self.filename = filename
         self.transaction_hash = transaction_hash
+        self.created_at  = created_at

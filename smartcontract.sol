@@ -11,7 +11,7 @@ contract StorageJsonFile
     {
         uint256 id;
         string filename;
-        string fileObject;
+        string file_content;
     }
 
     struct Person
@@ -33,16 +33,16 @@ contract StorageJsonFile
         numberFiles = 0;
     }
 
-    function addFile(string memory filename, string memory fileObject) public
+    function addFile(string memory filename, string memory file_content) public
     {
-        files[numberFiles] = JSonFileRef(numberFiles, filename, fileObject);
+        files[numberFiles] = JSonFileRef(numberFiles, filename, file_content);
         fileIds.push(numberFiles);
         numberFiles ++;
     }
 
-    function updateFile(uint fileId, JSonFileRef memory jSonFileRef) public
+    function updateFile(uint fileId, string memory file_content) public
     {
-        files[fileId] = jSonFileRef;
+        files[fileId].file_content = file_content;
     }
 
     function deleteFile(uint fileId) public

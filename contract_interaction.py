@@ -7,18 +7,15 @@ from datetime import date
 from os.path import dirname
 from web3 import Web3
 from solcx import compile_source
+from solcx import install_solc
 
 CONTRACT_CSV_FILEPATH = dirname(__file__) + '/contracts.csv'
 FILEPATH = dirname(__file__) + '/accounts.csv'
 W3 = Web3(Web3.HTTPProvider('http://localhost:9545'))
 private_key = None
-from solcx import install_solc
-
 install_solc('latest')
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-ABI = json.loads(open(f'{dir_path}/contract-abi.txt').read().replace("\n", ""))
-BYTECODE = open(f'{dir_path}/contract-bin.txt', 'r').read().replace("\n", "")
 ACCOUNT = W3.eth.accounts[0]
 
 

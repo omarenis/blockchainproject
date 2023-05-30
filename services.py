@@ -44,11 +44,10 @@ def get_random_string(length):
 
 
 def login(data: dict):
-    person = db.session.execute(db.select(PersonModel).filter_by(email=data.get('email'))).scalar_one_or_none()
-    print("person = ", type(person))
+    person = db.session.execute(db.select(PersonModel).filter_by(username=data.get('username'))).scalar_one_or_none()
     if isinstance(person, PersonModel):
         if person.check_password(data.get('password')):
-            if person.last_login is None:
+            if person.last_login is None and person.is_superuser is False:
                 send_code(person.email)
                 return person
             else:
@@ -136,6 +135,7 @@ class FileStorageService(object):
 
     def list(self):
         files = self.contract.functions.getFiles().call()
+        print(files)
         output = []
         for file in files:
             output.append(File(
@@ -156,13 +156,13 @@ class FileStorageService(object):
         })
 
     def update(self, filedata, person):
-        transaction = self.repository.update(file_content=filedata['file_content'])
+        transaction = self.repository.update(file_content=filedata['file_content'], _id=filedata['file_id'])
         self.operation_repository.create(**{
             'operation': 'update file',
             'filename': filedata['filename'],
             'created_at': datetime.now(),
-            'person_id': person.id,
-            'transaction_hash': transaction.hash
+            'person_id': int(person.get_id()),
+            'transaction_hash': transaction.hex()
         })
 
     def delete(self, _id, person):
@@ -170,6 +170,6 @@ class FileStorageService(object):
         self.operation_repository.create(**{
             'operation': 'delete file',
             'created_at': datetime.now(),
-            'person_id': person.id,
-            'transaction_hash': transaction.hash
+            'person_id': int(person.get_id()),
+            'transaction_hash': transaction.hex()
         })
