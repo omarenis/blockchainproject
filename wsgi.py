@@ -1,5 +1,4 @@
 from flask_wtf.csrf import generate_csrf
-
 from app import app, db
 from controllers import login_controller, verify_code_controller, get_workers, \
     worker_create_form, file_view, logout, get_operations

@@ -53,12 +53,12 @@
                             <table class="table table-flush" id="datatable-search">
                                 <thead class="thead-light">
                                 <tr>
-                                    <th class="text-center">ID</th>
-                                    <th class="text-center">filename</th>
-                                    <th class="text-center">date operation</th>
+                                    <th class="text-center">identifiant</th>
+                                    <th class="text-center">nom de fichier</th>
+                                    <th class="text-center">date d'opération</th>
                                     {% if  current_user.is_superuser %}
-                                        <th class="text-center">firstname and lastname worker</th>
-                                        <th class="text-center">username worker</th>
+                                        <th class="text-center">nom et prénom de travailleur</th>
+                                        <th class="text-center">position</th>
                                     {% endif %}
                                     <th class="text-center">transaction</th>
                                 </tr>

@@ -1,4 +1,3 @@
-import babel as babel
 from flask import Flask
 from flask_mail import Mail, Message
 from flask_login import UserMixin, LoginManager

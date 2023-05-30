@@ -24,16 +24,6 @@ with app.app_context():
     CONTRACT = Contract.load_last_uploaded_contract().contract_object
 
 load_dotenv()
-FERNET = Fernet(
-    base64.b64encode(hashlib.pbkdf2_hmac('sha256', os.environ.get('FERNET_KEY').encode('ascii'),
-                                         'hEq52fRbu1WGrU2TIsZ3vtFf7xJp2SMOEC4'.encode('ascii'),
-                                         1000))
-)
-
-
-def encode_private_key(private_key_path, passphrase):
-    return FERNET.encrypt((Account.from_key(W3.eth.account.decrypt(open(URI(private_key_path).path).read(), passphrase))
-                           ).key.hex().encode('utf-8')).decode('utf-8')
 
 
 def get_random_string(length):

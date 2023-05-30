@@ -52,7 +52,7 @@
                     <label for="formFile" class="form-label">File input to upload</label>
                     <input class="form-control" type="file" id="file">
                 </div>
-                <button type="submit" class="btn btn-success">add file</button>
+                <button type="submit" class="btn btn-success">add the file</button>
             </form>
         </div>
         <div class="container-fluid mt-5">
@@ -80,6 +80,9 @@
                                             <button type="button"
                                                     onclick="download('{{ file.file_content }}', '{{ file.filename }}')"
                                                     class="btn btn-warning">download
+                                            </button>
+                                            <button type="button" class="btn btn-warning" style="background: #c99f06">
+                                                edit
                                             </button>
                                             <button class="btn btn-danger" onclick="deleteFile( '{{ file.id }}' )">
                                                 delete
@@ -141,8 +144,8 @@
         })
 
         swalWithBootstrapButtons.fire({
-          title: 'Are you sure?',
-          text: "You won't be able to revert this!",
+          title: 'êtes vous sûr ?',
+          text: "vous ne pouver récuperer le fichier aprés cette opération",
           icon: 'warning',
           showCancelButton: true,
           confirmButtonText: 'Yes, delete it!',
@@ -161,7 +164,7 @@
           ) {
             swalWithBootstrapButtons.fire(
               'Cancelled',
-              'Your imaginary file is safe :)',
+              'Your file is safe :)',
               'error'
             )
           }
