@@ -1,0 +1,162 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block main %}
+    <form class="main-content max-height-vh-100 h-100">
+    {{ form.csrf_token }}
+        <input type="text" id="image" style="display: none" value="" name="image">
+        <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl ">
+            <div class="container-fluid py-1 px-3">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+                        <li class="breadcrumb-item text-sm">
+                            <a class="text-white" href="javascript:">
+                                <i class="ni ni-box-2"></i>
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white"
+                                                               href="javascript:">Workers</a></li>
+                        <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white"
+                                                               href="javascript:">Worker Accounts</a></li>
+                        <li class="breadcrumb-item text-sm text-white active" aria-current="page">new worker</li>
+                    </ol>
+                    <h6 class="font-weight-bolder text-white">new Worker</h6>
+                </nav>
+                <div class="sidenav-toggler sidenav-toggler-inner d-xl-block d-none me-auto">
+                    <a href="javascript:" class="nav-link text-body p-0">
+                        <div class="sidenav-toggler-inner">
+                            <i class="sidenav-toggler-line bg-white"></i>
+                            <i class="sidenav-toggler-line bg-white"></i>
+                            <i class="sidenav-toggler-line bg-white"></i>
+                        </div>
+                    </a>
+                </div>
+                <div class="collapse navbar-collapse me-md-0 me-sm-4 mt-sm-0 mt-2" id="navbar">
+                    <ul class="navbar-nav justify-content-end ms-auto">
+                        <li class="nav-item d-xl-none ps-3 pe-0 d-flex align-items-center">
+                            <a href="javascript:" class="nav-link text-body p-0" id="iconNavbarSidenav">
+                                <div class="sidenav-toggler-inner">
+                                    <i class="sidenav-toggler-line bg-white"></i>
+                                    <i class="sidenav-toggler-line bg-white"></i>
+                                    <i class="sidenav-toggler-line bg-white"></i>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="container-fluid my-5 py-2">
+            <div class="container mb-5">
+                <!-- Card Basic Info -->
+                <div class="card mt-4" id="basic-info">
+                    <div class="card-header">
+                        <h5>Basic Info</h5>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="container d-block">
+                                    <img src="{{ url_for('static', filename='img/upload_example.png') }}"
+                                         id="uploadedImage" class="w-100 min-vh-50" style="border: 1px; min-height: 15vh"
+                                         alt="image of worker"
+                                    />
+                                    <label class="btn btn-outline-success mt-2 text-center align-self-center"
+                                           for="upload" id="uploadLabel">
+                                        upload image of worker
+                                        <input type="text" name="image" style="display: none" value="" />
+                                        <input type="file" accept="image/*" class="d-none" id="upload" required/>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <label class="form-label">First Name</label>
+                                    <div class="input-group">
+                                        <input id="firstName" name="firstName" class="form-control" type="text"
+                                               placeholder="Alec" required="required">
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Last Name</label>
+                                    <div class="input-group">
+                                        <input id="lastName" name="lastname" class="form-control" type="text"
+                                               placeholder="Thompson" required="required">
+                                    </div>
+                                </div>
+                                <label class="form-label mt-4">Email</label>
+                                <div class="input-group">
+                                    <input id="email" name="email" class="form-control" type="email"
+                                           placeholder="example@email.com">
+                                </div>
+                                <label class="form-label mt-4">location</label>
+                                <div class="input-group">
+                                    <input id="location" name="location" class="form-control" type="text"
+                                           placeholder="Sydney, A">
+                                </div>
+                                <label class="form-label mt-4">Phone Number</label>
+                                <div class="input-group">
+                                    <input id="phone" name="telephone" class="form-control" type="number"
+                                           placeholder="+40 735 631 620">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Change Password -->
+                <div class="card mt-4" id="password">
+                    <div class="card-header">
+                        <h5>The Password</h5>
+                    </div>
+                    <div class="card-body pt-0">
+                        <label class="form-label">New password</label>
+                        <div class="form-group">
+                            <input class="form-control" type="password" placeholder="New password" name="password">
+                        </div>
+                        <label class="form-label">Confirm new password</label>
+                        <div class="form-group">
+                            <input class="form-control" type="password" placeholder="Confirm password" name="confirm">
+                        </div>
+                        <h5 class="mt-5">Password requirements</h5>
+                        <p class="text-muted mb-2">
+                            Please follow this guide for a strong password:
+                        </p>
+                        <ul class="text-muted ps-4 mb-0 float-start">
+                            <li>
+                                <span class="text-sm">One special characters</span>
+                            </li>
+                            <li>
+                                <span class="text-sm">Min 6 characters</span>
+                            </li>
+                            <li>
+                                <span class="text-sm">One number (2 are recommended)</span>
+                            </li>
+                            <li>
+                                <span class="text-sm">Change it often</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="d-flex flex-row-reverse w-100">
+                    <button class="btn bg-gradient-dark btn-sm float-end mt-6 mb-0" type="submit"> Create Worker</button>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript">
+      document.getElementById('upload').addEventListener('change', function (event) {
+        event.preventDefault();
+        const reader = new FileReader();
+        reader.onload = () => {
+          document.getElementById('uploadedImage').src = reader.result;
+        }
+        reader.readAsDataURL(event.target.files[0]);
+      })
+    </script>
+    <script type="text/javascript">
+
+    </script>
+    {{ super() }}
+
+{% endblock %}
