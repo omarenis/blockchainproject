@@ -22,7 +22,6 @@ contract StorageJsonFile
         string email;
         string telephone;
         string location;
-        string image;
     }
 
     mapping(uint => Person) private persons;
@@ -35,13 +34,15 @@ contract StorageJsonFile
 
     function addFile(string memory filename, string memory file_content) public
     {
+        numberFiles ++;
         files[numberFiles] = JSonFileRef(numberFiles, filename, file_content);
         fileIds.push(numberFiles);
-        numberFiles ++;
     }
 
     function updateFile(uint fileId, string memory file_content) public
     {
+        JSonFileRef memory file = files[fileId];
+        require(file.id == fileId, 'file does not exist');
         files[fileId].file_content = file_content;
     }
 
@@ -70,9 +71,9 @@ contract StorageJsonFile
     }
 
 
-    function createPerson(uint256 id, string memory firstname, string memory lastname, string memory email, string memory telephone, string memory location, string memory image) public
+    function createPerson(uint256 id, string memory firstname, string memory lastname, string memory email, string memory telephone, string memory location) public
     {
-        persons[id] = Person(id, firstname, lastname, email, telephone, location, image);
+        persons[id] = Person(id, firstname, lastname, email, telephone, location);
         personIds.push(id);
         numberPersons ++;
     }
@@ -88,17 +89,17 @@ contract StorageJsonFile
     }
 
     function updatePerson(uint256 personId, string memory firstname, string memory lastname, string memory telephone,
-        string memory location, string memory image) public
+        string memory location ) public
     {
         persons[personId].firstname = firstname;
         persons[personId].lastname = lastname;
         persons[personId].telephone = telephone;
         persons[personId].location = location;
-        persons[personId].image = image;
     }
 
     function deletePerson(uint personId) public
     {
+        require(persons[personId].id != 0, 'person does not exist');
         delete persons[personId];
         for(uint256 i = 0; i < personIds.length; i++)
         {
@@ -112,17 +113,21 @@ contract StorageJsonFile
     }
 
     function getPersonByEmail(string memory email) public view returns(Person memory)  {
+        Person memory person;
         for(uint i=0; i < personIds.length; i++)
         {
             if(keccak256(bytes(email)) == keccak256(bytes(persons[personIds[i]].email)))
             {
-                return persons[personIds[i]];
+                person =  persons[personIds[i]];
             }
         }
-        revert('Not found');
+        require(person.id != 0, 'person does not exist');
+        return person;
     }
 
     function getPersonById(uint256 id) public view returns(Person memory) {
-        return persons[id];
+        Person memory person = persons[id];
+        require(person.id != 0, 'person does not exist');
+        return person;
     }
 }

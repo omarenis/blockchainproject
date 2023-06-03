@@ -51,14 +51,21 @@ def create_account(passphrase):
                 }
 
 
-def run_get_function(function):
-    return function().call()
+def run_get_function(function, params=None):
+    try:
+        transaction = function() if params is None else function(*params)
+        return transaction.call()
+    except Exception as exception:
+        data = eval(str(exception))
+        message = data.get('message')
+        raise ValueError(message[message.find('revert') + len('revert'):])
 
 
 def execute_set_function(function, params, address):
     W3.geth.personal.unlock_account(address, '')
-    return function(*params).transact({
+    transaction = function(*params)
+    return transaction.transact({
         'from': address,
         'nonce': W3.eth.get_transaction_count(address),
-        'gas': function(*params).estimate_gas()
+        'gas': transaction.estimate_gas()
     })

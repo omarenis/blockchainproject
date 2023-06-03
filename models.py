@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
-from app import db, UserMixin
+from app import db
 from contract_interaction import submit_transaction_hash, W3, compile_source_file
 from sqlalchemy import ForeignKey, Column, String, Text, Integer, Boolean, DateTime
 from sqlalchemy import String
@@ -11,7 +11,7 @@ def get_results(data):
     return [i[0] for i in data]
 
 
-class PersonModel(db.Model, UserMixin):
+class PersonModel(db.Model):
     __tablename__ = 'persons'
 
     id = Column(Integer, primary_key=True)
@@ -68,7 +68,7 @@ class OperationModel(db.Model):
 
 class Person(object):
 
-    def __init__(self, _id, username, email, firstname, lastname, location, telephone, image, password=None):
+    def __init__(self, _id, username, email, firstname, lastname, location, telephone, password=None):
         self.id = _id
         self.username = username
         self.password = password
@@ -77,7 +77,6 @@ class Person(object):
         self.lastname = lastname
         self.location = location
         self.telephone = telephone
-        self.image = image
 
 
 def load_last_contract():

@@ -1,6 +1,6 @@
 from models import Person, PersonModel, Contract, File, OperationModel, Operation
 from app import db
-from contract_interaction import W3, execute_set_function
+from contract_interaction import W3, execute_set_function, run_get_function
 
 
 class PersonRepository(object):
@@ -14,7 +14,7 @@ class PersonRepository(object):
         results = self.session.execute(db.Select(PersonModel).filter_by(is_superuser=False)).all()
         persons = []
         for result in results:
-            person_contact_data = self.contract.functions.getPersonById(int(result[0].get_id())).call()
+            person_contact_data = self.contract.functions.getPersonById(int(result[0].id)).call()
             persons.append(Person(**{
                 'username': result[0].username,
                 'firstname': person_contact_data[1],
@@ -22,8 +22,7 @@ class PersonRepository(object):
                 'email': person_contact_data[3],
                 'telephone': person_contact_data[4],
                 'location': person_contact_data[5],
-                'image': person_contact_data[6],
-                '_id': int(result[0].get_id())
+                '_id': int(result[0].id)
             }))
         return persons
 
@@ -35,41 +34,49 @@ class PersonRepository(object):
         self.session.add(person)
         self.session.commit()
         execute_set_function(self.contract.functions.createPerson, (
-            int(person.get_id()), person_data.get('firstname'),
+            int(person.id), person_data.get('firstname'),
             person_data.get('lastname'),
             person_data.get('email'),
             person_data.get('telephone'),
-            person_data.get('location'),
-            person_data.get('image')
+            person_data.get('location')
         ), address=Contract.coinbase)
-        person_data['_id'] = int(person.get_id())
+        person_data['_id'] = int(person.id)
         return Person(**person_data)
 
     def get_person_by_id(self, _id: int):
-        person_contact_data = self.contract.functions.getPersonById(_id).call()
-        person_instance = db.session.execute(db.Select(PersonModel).filter_by(id=_id)).scalar_one()
+        person_instance = db.session.execute(db.Select(PersonModel).filter_by(id=_id)).scalar_one_or_none()
+        if person_instance is None:
+            raise ValueError('user not found with the specified id')
+        person_contact_data = run_get_function(self.contract.functions.getPersonById, (_id,))
         return Person(**{
             'firstname': person_contact_data[1],
             'lastname': person_contact_data[2],
             'email': person_contact_data[3],
             'telephone': person_contact_data[4],
             'location': person_contact_data[5],
-            'image': person_contact_data[6],
-            '_id': int(person_instance.get_id()),
-            'username': person_instance.username
+            '_id': int(person_instance.id),
+            'username': person_instance.username,
+            'password': person_instance.password
         })
 
     def update(self, data: dict, _id: int):
-        result = self.session.execute(db.Select(PersonModel).filter_by(id=_id)).scalar_one_or_none()
+        result = self.get_person_by_id(_id)
         if result is None:
             raise ValueError('person not found with the current id')
-        if result.username != data.get('username'):
-            result.username = data.get('username')
-            db.session.commit()
-
+        result_model = db.session.execute(db.Select(PersonModel).filter_by(id=result.id)).scalar_one_or_none()
+        if data.get('username') is not None and result.username != data.get('username'):
+            result_model.username = data.get('username')
+        if data.get('password') is not None and result_model.check_password(data['password']):
+            result_model.set_password(data.get('password'))
+        db.session.commit()
+        result.firstname = data.get('firstname') if data.get('firstname') is not None else result.firstname
+        result.lastname = data.get('lastname') if data.get('lastname') is not None else result.lastname
+        result.telephone = data.get('telephone') if data.get('telephone') is not None else result.telephone
+        result.location = data.get('location') if data.get('location') is not None else result.location
         execute_set_function(self.contract.functions.updatePerson, (
-            int(result.get_id()), data.get('firstname'), data.get('lastname'), data.get('telephone'),
-            data.get('location'), data.get('image')), PersonRepository.coinbase)
+            int(result.id), result.firstname, result.lastname, result.telephone, result.location)
+                             , PersonRepository.coinbase)
+        return result
 
     def delete(self, _id: int):
         result = self.session.execute(db.Select(PersonModel).filter_by(id=_id)).scalar_one_or_none()
@@ -104,7 +111,6 @@ class FileRepository(object):
             return []
 
     def create(self, file_data: dict):
-
         return execute_set_function(self.contract.functions.addFile, (
             file_data['filename'], file_data['file_content']
         ), address=self.coinbase)
@@ -143,7 +149,12 @@ class OperationRepository(object):
         operations = []
         for result in results:
             operation_instance = result[0]
-            person = self.user_repository.get_person_by_id(operation_instance.person_id)
+            person = operation_instance.person
+            if person.is_superuser is False:
+                person = self.user_repository.get_person_by_id(operation_instance.person_id)
+            else:
+                person = Person(_id=person.id, username=person.username, email=None, firstname=None,
+                                lastname=None, location=None, telephone=None)
             operations.append(Operation(person=person, filename=operation_instance.filename,
                                         transaction_hash=operation_instance.transaction_hash,
                                         _id=operation_instance.id, created_at=operation_instance.created_at))

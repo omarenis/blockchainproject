@@ -1,5 +1,4 @@
 from flask import url_for
-
 from services import send_code
 from wsgi import app
 

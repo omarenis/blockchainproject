@@ -1,3 +1,4 @@
+import json
 import time
 from app import app, db
 from contract_interaction import W3, compile_source_file, submit_transaction_hash, execute_set_function
@@ -52,7 +53,7 @@ def test_crate_worker():
 def test_list_workers():
     with app.app_context():
         workerService = WorkerService()
-        workers = workerService.list()
+        print(workerService.list())
 
 
 def test_create_file():
@@ -64,12 +65,21 @@ def test_create_file():
 
 def test_get_files():
     with app.app_context():
-        contract = Contract.load_last_uploaded_contract().contract_object
-        print(contract.functions.getFiles().call())
+        try:
+            contract = Contract.load_last_uploaded_contract().contract_object
+            print(contract.functions.getPersonById(1).call())
+        except ValueError as exception:
+            data = eval(str(exception))
+            message = data.get('message')
+            print(message[message.find('revert') + len('revert'):])
+
+
+def test_get_file_by_id():
+    contract = Contract.load_last_uploaded_contract().contract_object
+    print(contract.functions.get)
 
 
 def test_get_operations():
-
     with app.app_context():
         operation_repository = OperationRepository(CONTRACT)
         print(operation_repository.list())
