@@ -83,7 +83,7 @@ class PersonRepository(object):
         if result is None:
             raise ValueError('person not found')
         else:
-            result.delete()
+            db.session.delete(result)
             self.session.commit()
             execute_set_function(self.contract.functions.deletePerson, (_id,), PersonRepository.coinbase)
 

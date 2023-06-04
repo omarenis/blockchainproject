@@ -11,7 +11,7 @@ from flask_jwt_extended import create_access_token
 from app import jwt, db, jwt_redis_blocklist, ACCESS_EXPIRES
 from models import PersonModel
 from repositories import OperationRepository
-from services import login, verify_code, WorkerService, FileStorageService, CONTRACT
+from services import login, verify_code, WorkerService, FileStorageService, CONTRACT, send_code
 
 import redis
 
@@ -41,6 +41,14 @@ def verify_code_controller():
     if verified is True:
         return jsonify(message="verified"), 200
     return jsonify(message='not verified'), 403
+
+
+def send_code_view():
+    try:
+        send_code(email=request.json.get('email'))
+        return jsonify(message="code sent"), 200
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
 
 
 @jwt_required()
@@ -94,30 +102,6 @@ def worker_form(pk: int):
     else:
         worker_service.delete(pk)
         return jsonify(), 204
-
-
-def numverify():
-    if request.method == 'GET':
-        return '''<h1>Please fill out the parameters</h1>
-                    <form method="POST" action="/validate">
-                    <input type="text" name="acc_key">
-                    <input type="text" name="email">
-                    <input type="submit" value="Request">
-                </form>'''
-    else:
-        acc_key = request.form['acc_key']
-        email = request.form['email']
-
-        req = requests.get('http://apilayer.net/api/check?access_key=' + acc_key + '&email=' + email)
-        response = req.json()
-
-        disposable = response["disposable"]
-        format_valid = response["format_valid"]
-        score = response["score"]
-        mx_found = response["mx_found"]
-
-        return redirect(url_for('result', acc_key=acc_key, email=email, format_valid=format_valid,
-                                disposable=disposable, score=score, mx_found=mx_found))
 
 
 @jwt_required()

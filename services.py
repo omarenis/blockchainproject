@@ -12,12 +12,6 @@ from models import Person, PersonModel, Contract, File
 from contract_interaction import W3, run_get_function
 import os
 from dotenv import load_dotenv
-from cryptography.fernet import Fernet
-import hashlib
-import base64
-from eth_account import Account
-import urllib
-from uri.uri import URI
 from app import app
 
 from repositories import PersonRepository, FileRepository, OperationRepository
@@ -52,6 +46,7 @@ def login(data: dict):
 
 
 def send_code(email):
+    run_get_function(CONTRACT.functions.getPersonByEmail, (email, ))
     response = post(f"{DOMAIN}/passwordless/start", data={
         'client_id': CLIENT_ID,
         'client_secret': CLIENT_SECRET,

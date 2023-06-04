@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
-from app import db
+from app import db, app
 from contract_interaction import submit_transaction_hash, W3, compile_source_file
 from sqlalchemy import ForeignKey, Column, String, Text, Integer, Boolean, DateTime
 from sqlalchemy import String
@@ -143,4 +143,4 @@ class Operation(object):
         self.person = person
         self.filename = filename
         self.transaction_hash = transaction_hash
-        self.created_at  = created_at
+        self.created_at = created_at
